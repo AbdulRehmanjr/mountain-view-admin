@@ -1,0 +1,152 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model SellerInfo {
+  sellerId String  @id @default(uuid())
+  userName String  @unique
+  password String
+  Hotel    Hotel[]
+}
+
+model Hotel {
+  hotelId            String     @id @default(uuid())
+  hotelName          String     @default("none")
+  location           String     @default("none")
+  manager            String     @default("none")
+  createdAt          DateTime   @default(now())
+  sellerInfoSellerId String
+  island             String     @default("none")
+  seller             SellerInfo @relation(fields: [sellerInfoSellerId], references: [sellerId], onDelete: Cascade)
+  Room               Room[]
+}
+
+model Room {
+  roomId       String        @id @default(uuid())
+  roomName     String        @default("none")
+  capacity     Int           @default(0)
+  area         Int           @default(0)
+  features     String[]
+  pictures     String[]
+  hotelHotelId String
+  description  String        @default("none")
+  roomType     String        @default("none")
+  dp           String        @default("none")
+  beds         Int           @default(0)
+  quantity     Int           @default(1)
+  BlockDate    BlockDate[]
+  MyRentInfo   MyRentInfo[]
+  hotel        Hotel         @relation(fields: [hotelHotelId], references: [hotelId], onDelete: Cascade)
+  RoomBooking  RoomBooking[]
+}
+
+model RoomBooking {
+  bookingId          String             @id @default(uuid())
+  startDate          String             @default("none")
+  endDate            String             @default("none")
+  roomRoomId         String             @default("none")
+  isRefund           Boolean            @default(false)
+  bookingDetailId    String
+  price              Int                @default(0)
+  type               String             @default("none")
+  payPalInfoId       String
+  bookingDetails     BookingDetail      @relation(fields: [bookingDetailId], references: [bookingDetailId])
+  PayPalBoookingInfo PayPalBoookingInfo @relation(fields: [payPalInfoId], references: [paypalBoookingId])
+  Room               Room               @relation(fields: [roomRoomId], references: [roomId], onDelete: Cascade)
+}
+
+model BookingDetail {
+  bookingDetailId String        @id @default(uuid())
+  adults          Int           @default(0)
+  children        Int           @default(0)
+  kids            Int           @default(0)
+  city            String        @default("none")
+  country         String        @default("none")
+  phone           String        @default("none")
+  postalCode      String        @default("none")
+  streetName      String        @default("none")
+  fullName        String        @default("none")
+  surName         String        @default("none")
+  email           String        @default("none")
+  arrivalTime     String        @default("none")
+  RoomBooking     RoomBooking[]
+}
+
+model RoomPrice {
+  priceId    String   @id @default(uuid())
+  startDate  String   @default("none")
+  endDate    String   @default("none")
+  roomType   String   @default("none")
+  roomId     String   @default("none")
+  percentInc Int      @default(0)
+  price      Int      @default(0)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @default(now()) @updatedAt
+}
+
+model BlockDate {
+  blockId    String   @id @default(uuid())
+  roomRoomId String
+  startDate  String   @default("none")
+  endDate    String   @default("none")
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @default(now()) @updatedAt
+  room       Room     @relation(fields: [roomRoomId], references: [roomId], onDelete: Cascade)
+}
+
+model GoogleToken {
+  tokenId      String @id @default(uuid())
+  refreshToken String @default("none")
+}
+
+model MyRentGroup {
+  id        String @id @default(uuid())
+  groupId   Int    @default(0)
+  groupName String @unique
+
+  @@index([groupName, groupId])
+}
+
+model Discounts {
+  discountId String @id @default(uuid())
+  discount   Int    @default(0)
+  title      String @default("none")
+  redeemCode String @unique
+  endDate    String @default("none")
+  startDate  String @default("none")
+}
+
+model SellerPayPal {
+  id                String @id @default(uuid())
+  trackingId        String @unique
+  merchantId        String @default("none")
+  partner_client_id String @default("none")
+  email             String @unique
+
+  @@index([email, trackingId])
+}
+
+model MyRentInfo {
+  myRentId   String @id @default(uuid())
+  propertyId String @default("none")
+  userId     String @default("none")
+  erpId      String @default("none")
+  roomRoomId String
+  Room       Room   @relation(fields: [roomRoomId], references: [roomId], onDelete: Cascade)
+}
+
+model PayPalBoookingInfo {
+  paypalBoookingId String        @id @default(uuid())
+  paymentEmail     String        @default("none")
+  captureId        String
+  payerId          String        @default("none")
+  paymentId        String        @default("none")
+  contactEmail     String        @default("none")
+  createdAt        DateTime      @default(now())
+  RoomBooking      RoomBooking[]
+}

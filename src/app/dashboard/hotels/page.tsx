@@ -4,9 +4,15 @@ import { HotelTable } from "~/app/_components/dashboard/hotel/HotelTable";
 export default function HotelPage() {
 
     return (
-        <section className="flex flex-col gap-3">
-            <h1 className="text-xl md:text-3xl font-bold text-gray-900">Hotel Details</h1>
-            <HotelTable />
-        </section>
+        <>
+        <div className="flex items-center">
+          <h1 className="text-lg font-semibold text-primary md:text-2xl">Hotel Details</h1>
+        </div>
+        <div
+          className="flex flex-1 rounded-lg border border-dashed shadow-sm p-5 md:p-10"
+        >
+          <HotelTable />
+        </div>
+      </>
     )
 }

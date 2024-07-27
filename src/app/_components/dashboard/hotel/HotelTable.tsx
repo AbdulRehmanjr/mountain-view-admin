@@ -1,7 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 import { api } from "~/trpc/react";
-import Link from "next/link";
 import {
   type ColumnDef,
   type ColumnFiltersState,
@@ -14,12 +13,10 @@ import {
   getSortedRowModel,
   useReactTable,
 } from "@tanstack/react-table";
-import { PencilIcon } from "lucide-react";
+import {RefreshCw, SearchIcon } from "lucide-react";
 import { useEffect, useState } from "react";
-
 import { Button } from "~/components/ui/button";
 import { Checkbox } from "~/components/ui/checkbox";
-
 import { Input } from "~/components/ui/input";
 import {
   Table,
@@ -29,10 +26,10 @@ import {
   TableHeader,
   TableRow,
 } from "~/components/ui/table";
-
 import { CreateHotelDialog } from "~/app/_components/dashboard/hotel/CreateHotelDialog";
 import { DeleteHotelDialog } from "~/app/_components/dashboard/hotel/DeleteHotelDialog";
 import Loading from "~/app/loading";
+import { EditHotelDialog } from "./EditHotelDialog";
 
 const columns: ColumnDef<HotelProps>[] = [
   {
@@ -99,22 +96,13 @@ const columns: ColumnDef<HotelProps>[] = [
     enableHiding: false,
     cell: ({ row }) => {
       const hotel = row.original;
-      return (
-        <Link
-          href={`hotels/${hotel.hotelId}`}
-          className="flex h-full w-full items-center gap-1"
-        >
-          <PencilIcon className="h-3 w-3" />
-          Edit
-        </Link>
-      );
+      return <EditHotelDialog hotelId={hotel.hotelId} />;
     },
   },
 ];
 
 export const HotelTable = () => {
   const hotelData = api.hotel.getAllHotelBySellerId.useQuery();
-
   const [data, setData] = useState<HotelProps[]>([]);
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
@@ -144,24 +132,37 @@ export const HotelTable = () => {
     },
   });
 
-  if (hotelData.isFetching) return <Loading />;
+  if (hotelData.isFetching)
+    return (
+      <div className="w-full">
+        <Loading />
+      </div>
+    );
 
   return (
     <div className="w-full">
-      <div className="flex items-center justify-between gap-2 py-4">
-        <Input
-          placeholder="Search hotel name"
-          value={
-            (table.getColumn("hotelName")?.getFilterValue() as string) ?? ""
-          }
-          onChange={(event) =>
-            table.getColumn("hotelName")?.setFilterValue(event.target.value)
-          }
-          className="max-w-sm"
-        />
+      <div className="mb-4 flex items-center justify-between gap-4">
+        <div className="relative flex-1">
+          <SearchIcon className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+          <Input
+            placeholder="Search hotel name"
+            value={
+              (table.getColumn("hotelName")?.getFilterValue() as string) ?? ""
+            }
+            onChange={(event) =>
+              table.getColumn("hotelName")?.setFilterValue(event.target.value)
+            }
+            className="pl-10"
+          />
+        </div>
         <div className="flex items-center gap-2">
           <CreateHotelDialog />
-          <Button variant={"outline"} onClick={() => hotelData.refetch()}>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => hotelData.refetch()}
+          >
+            <RefreshCw className="mr-2 h-4 w-4" />
             Refresh
           </Button>
           <DeleteHotelDialog
@@ -176,18 +177,16 @@ export const HotelTable = () => {
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (
               <TableRow key={headerGroup.id}>
-                {headerGroup.headers.map((header) => {
-                  return (
-                    <TableHead key={header.id}>
-                      {header.isPlaceholder
-                        ? null
-                        : flexRender(
-                            header.column.columnDef.header,
-                            header.getContext(),
-                          )}
-                    </TableHead>
-                  );
-                })}
+                {headerGroup.headers.map((header) => (
+                  <TableHead key={header.id} className="font-semibold">
+                    {header.isPlaceholder
+                      ? null
+                      : flexRender(
+                          header.column.columnDef.header,
+                          header.getContext(),
+                        )}
+                  </TableHead>
+                ))}
               </TableRow>
             ))}
           </TableHeader>
@@ -197,6 +196,7 @@ export const HotelTable = () => {
                 <TableRow
                   key={row.id}
                   data-state={row.getIsSelected() && "selected"}
+                  className="hover:bg-gray-50"
                 >
                   {row.getVisibleCells().map((cell) => (
                     <TableCell key={cell.id}>
@@ -221,8 +221,8 @@ export const HotelTable = () => {
           </TableBody>
         </Table>
       </div>
-      <div className="flex items-center justify-end space-x-2 py-4">
-        <div className="text-muted-foreground flex-1 text-sm">
+      <div className="mt-4 flex items-center justify-between">
+        <div className="text-sm text-muted-foreground">
           {table.getFilteredSelectedRowModel().rows.length} of{" "}
           {table.getFilteredRowModel().rows.length} row(s) selected.
         </div>

@@ -116,7 +116,7 @@ export const BookingForm = () => {
         onSubmit={form.handleSubmit(formSubmited)}
       >
         <Card className="col-span-1">
-          <CardHeader>
+          <CardHeader className="text-primary">
             <CardTitle>Occupancy Information</CardTitle>
             <CardDescription>Occupancy information for room</CardDescription>
           </CardHeader>
@@ -179,7 +179,7 @@ export const BookingForm = () => {
                             setCalendar({
                               ...calendar,
                               totalPeople:
-                                value + +form.getValues("adults") ?? 0,
+                                value + +form.getValues("adults"),
                             });
                           }
                         }
@@ -213,7 +213,7 @@ export const BookingForm = () => {
                             setCalendar({
                               ...calendar,
                               totalPeople:
-                                value + +form.getValues("adults") ?? 0,
+                                value + +form.getValues("adults"),
                             });
                           }
                         }
@@ -311,7 +311,7 @@ export const BookingForm = () => {
           </CardContent>
         </Card>
         <Card className="col-span-1">
-          <CardHeader>
+          <CardHeader className="text-primary">
             <CardTitle>Booking Information</CardTitle>
             <CardDescription>Boarding information for room</CardDescription>
           </CardHeader>
@@ -471,7 +471,7 @@ export const BookingForm = () => {
           <Button
             type="submit"
             disabled={createBooking.isLoading}
-            className="bg-gradient-to-br from-blue-400 to-purple-500 text-sm font-semibold text-white shadow-md transition-all duration-200 ease-in-out hover:bg-gradient-to-br hover:from-blue-500 hover:to-purple-600 sm:text-base"
+    
           >
             {createBooking.isLoading ? (
               <>

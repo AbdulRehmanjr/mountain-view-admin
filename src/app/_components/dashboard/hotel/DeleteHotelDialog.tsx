@@ -1,6 +1,6 @@
 
 import { ReloadIcon } from "@radix-ui/react-icons"
-import { Trash } from "lucide-react"
+import { Trash2 } from "lucide-react"
 
 import { Button } from "~/components/ui/button"
 import {
@@ -32,9 +32,10 @@ export const DeleteHotelDialog = ({ hotelIds }: { hotelIds: string[] }) => {
     return (
         <Dialog>
             <DialogTrigger asChild>
-                <Button variant={'destructive'} disabled={hotelIds.length == 0}>
-                    <Trash className="w-4 h-4" /> Delete
-                </Button>
+            <Button variant="destructive" size="sm" disabled={hotelIds.length === 0}>
+                <Trash2 className="mr-2 h-4 w-4" />
+                Delete Selected
+              </Button>
             </DialogTrigger>
             <DialogContent className="sm:max-w-[425px]">
                 <DialogHeader>

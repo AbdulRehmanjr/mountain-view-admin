@@ -63,12 +63,12 @@ export const DiscountRouter = createTRPCRouter({
             }
         }),
     updateDiscount: protectedProcedure
-        .input(z.object({ discountId: z.string(), title: z.string(), discount: z.number() }))
+        .input(z.object({ discountId: z.string(), title: z.string(), discount: z.number(), startDate: z.string(), endDate: z.string() }))
         .mutation(async ({ ctx, input }) => {
             try {
                 await ctx.db.discounts.update({
                     where: { discountId: input.discountId },
-                    data: { title: input.title, discount: input.discount }
+                    data: { title: input.title, discount: input.discount, startDate: input.startDate, endDate: input.endDate }
                 })
             } catch (error) {
                 if (error instanceof TRPCClientError) {

@@ -188,6 +188,9 @@ type DiscountProps = {
     discountId: string
     discount: number
     title: string
+    startDate:string,
+    endDate:string,
+    createdAt:Date
     redeemCode: string
 }
 

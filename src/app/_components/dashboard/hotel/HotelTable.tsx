@@ -28,8 +28,8 @@ import {
 } from "~/components/ui/table";
 import { CreateHotelDialog } from "~/app/_components/dashboard/hotel/CreateHotelDialog";
 import { DeleteHotelDialog } from "~/app/_components/dashboard/hotel/DeleteHotelDialog";
-import Loading from "~/app/loading";
-import { EditHotelDialog } from "./EditHotelDialog";
+import { EditHotelDialog } from "~/app/_components/dashboard/hotel/EditHotelDialog";
+import { TableSkeleton } from "~/app/_components/dashboard/skeletons/TableSkeletion";
 
 const columns: ColumnDef<HotelProps>[] = [
   {
@@ -136,7 +136,7 @@ export const HotelTable = () => {
   if (hotelData.isFetching)
     return (
       <div className="w-full">
-        <Loading />
+        <TableSkeleton headers={['Hotel Name','Manager','Location','Island','Creation time','Action']}/>
       </div>
     );
 

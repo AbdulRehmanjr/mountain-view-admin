@@ -3,10 +3,7 @@
 import { useForm } from "react-hook-form";
 import { api } from "~/trpc/react";
 import {useMemo, useState } from "react";
-import {
-  CldUploadWidget,
-  type CloudinaryUploadWidgetResults,
-} from "next-cloudinary";
+import {CldUploadWidget} from "next-cloudinary";
 import { Input } from "~/components/ui/input";
 import { Textarea } from "~/components/ui/textarea";
 import { Button } from "~/components/ui/button";
@@ -367,8 +364,8 @@ export const EditRoomForm = ({ roomId }: { roomId: string }) => {
                 </FormDescription>
               </FormItem>
             </CardContent>
-            <CardFooter>
-              <Button type="submit" className="w-full" disabled={updateRoom.isLoading}>
+            <CardFooter className="flex justify-center">
+              <Button type="submit" className="w-fit" disabled={updateRoom.isLoading}>
                 {updateRoom.isLoading ? "Updating..." : "Update Room"}
               </Button>
             </CardFooter>

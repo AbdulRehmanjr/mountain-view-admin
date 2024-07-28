@@ -15,8 +15,6 @@ import {
   useReactTable,
 } from "@tanstack/react-table";
 import {
-  Calendar,
-  MoreHorizontal,
   PencilIcon,
   Plus,
   RefreshCw,
@@ -26,14 +24,7 @@ import { useEffect, useState } from "react";
 
 import { Button } from "~/components/ui/button";
 import { Checkbox } from "~/components/ui/checkbox";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "~/components/ui/dropdown-menu";
+
 import { Input } from "~/components/ui/input";
 import {
   Table,
@@ -45,7 +36,7 @@ import {
 } from "~/components/ui/table";
 
 import { DeleteRoomPopups } from "~/app/_components/dashboard/room/DeleteRoomPopup";
-import Loading from "~/app/loading";
+import { TableSkeleton } from "~/app/_components/dashboard/skeletons/TableSkeletion";
 
 const columns: ColumnDef<RoomDetailProps>[] = [
   {
@@ -91,6 +82,13 @@ const columns: ColumnDef<RoomDetailProps>[] = [
     },
   },
   {
+    accessorKey: "quantity",
+    header: "Quantity",
+    cell: ({ row }) => {
+      return <div className="font-medium">{row.getValue("quantity")}</div>;
+    },
+  },
+  {
     accessorKey: "capacity",
     header: "Capacity",
     cell: ({ row }) => {
@@ -119,36 +117,12 @@ const columns: ColumnDef<RoomDetailProps>[] = [
     cell: ({ row }) => {
       const room = row.original;
       return (
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="ghost" className="h-8 w-8 p-0">
-              <span className="sr-only">Open menu</span>
-              <MoreHorizontal className="h-4 w-4" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuLabel>Actions</DropdownMenuLabel>
-            <DropdownMenuItem>
-              <Link
-                href={`rooms/edit/${room.roomId}`}
-                className="flex h-full w-full items-center gap-1"
-              >
-                <PencilIcon className="mr-2 h-3 w-3" />
-                Edit
-              </Link>
-            </DropdownMenuItem>
-            <DropdownMenuItem>
-              <Link
-                href={`rooms/${room.roomId}`}
-                className="flex h-full w-full items-center gap-1"
-              >
-                <Calendar className="mr-2 h-3 w-3" />
-                Calendar
-              </Link>
-            </DropdownMenuItem>
-            <DropdownMenuSeparator />
-          </DropdownMenuContent>
-        </DropdownMenu>
+        <Button variant={"outline"} asChild>
+          <Link href={`rooms/edit/${room.roomId}`}>
+            <PencilIcon className="mr-2 h-3 w-3" />
+            Edit
+          </Link>
+        </Button>
       );
     },
   },
@@ -189,7 +163,7 @@ export const RoomTable = () => {
   if (roomData.isFetching)
     return (
       <div className="w-full">
-        <Loading />
+        <TableSkeleton headers={["Room Name",'Room Type','Hotel Name','Quantity','Capacity','Beds','Area']} />
       </div>
     );
 
@@ -211,7 +185,7 @@ export const RoomTable = () => {
         </div>
         <div className="flex items-center gap-2">
           <Button size="sm" asChild>
-            <Link href={'/dashboard/rooms/create'}>
+            <Link href={"/dashboard/rooms/create"}>
               <Plus className="mr-2 h-4 w-4" />
               Add Room
             </Link>

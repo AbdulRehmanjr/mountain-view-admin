@@ -455,7 +455,7 @@ export const BookingForm = () => {
           </CardContent>
         </Card>
         <Card className="col-span-2">
-          <CardHeader>
+          <CardHeader className="text-primary">
             <CardTitle>Select booking dates</CardTitle>
             <CardDescription>Booking date selection for room</CardDescription>
           </CardHeader>

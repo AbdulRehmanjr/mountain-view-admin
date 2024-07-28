@@ -5,6 +5,7 @@ import {
   Building,
   Home,
   Package2,
+  Ticket,
 } from "lucide-react";
 
 import { Button } from "~/components/ui/button";
@@ -21,6 +22,7 @@ export const SideBar = () => {
     { href: "/dashboard", icon: Home, label: "Dashbaord" },
     { href: "/dashboard/hotels", icon: Building, label: "Hotels" },
     { href: "/dashboard/rooms", icon: Bed, label: "Rooms" },
+    { href: "/dashboard/discounts", icon: Ticket, label: "Discounts" },
   ];
 
   return (

@@ -14,7 +14,14 @@ import {
   getSortedRowModel,
   useReactTable,
 } from "@tanstack/react-table";
-import { Calendar, MoreHorizontal, PencilIcon, Plus } from "lucide-react";
+import {
+  Calendar,
+  MoreHorizontal,
+  PencilIcon,
+  Plus,
+  RefreshCw,
+  SearchIcon,
+} from "lucide-react";
 import { useEffect, useState } from "react";
 
 import { Button } from "~/components/ui/button";
@@ -38,9 +45,7 @@ import {
 } from "~/components/ui/table";
 
 import { DeleteRoomPopups } from "~/app/_components/dashboard/room/DeleteRoomPopup";
-import { ReloadIcon } from "@radix-ui/react-icons";
 import Loading from "~/app/loading";
-
 
 const columns: ColumnDef<RoomDetailProps>[] = [
   {
@@ -128,7 +133,7 @@ const columns: ColumnDef<RoomDetailProps>[] = [
                 href={`rooms/edit/${room.roomId}`}
                 className="flex h-full w-full items-center gap-1"
               >
-                <PencilIcon className="h-3 w-3" />
+                <PencilIcon className="mr-2 h-3 w-3" />
                 Edit
               </Link>
             </DropdownMenuItem>
@@ -137,7 +142,7 @@ const columns: ColumnDef<RoomDetailProps>[] = [
                 href={`rooms/${room.roomId}`}
                 className="flex h-full w-full items-center gap-1"
               >
-                <Calendar className="h-3 w-3" />
+                <Calendar className="mr-2 h-3 w-3" />
                 Calendar
               </Link>
             </DropdownMenuItem>
@@ -181,40 +186,51 @@ export const RoomTable = () => {
     if (roomData.data) setData(roomData.data);
   }, [roomData.data]);
 
-  if (roomData.isFetching) return <Loading />;
+  if (roomData.isFetching)
+    return (
+      <div className="w-full">
+        <Loading />
+      </div>
+    );
 
   return (
-    <div className="w-full space-y-4">
-      <div className="flex items-center justify-between">
-        <div className="relative w-72">
-        <Input
-          placeholder="Search Room name"
-          value={
-            (table.getColumn("roomName")?.getFilterValue() as string) ?? ""
-          }
-          onChange={(event) =>
-            table.getColumn("roomName")?.setFilterValue(event.target.value)
-          }
-          className="max-w-sm"
-        />
+    <div className="w-full ">
+      <div className="mb-4 flex items-center justify-between gap-4">
+        <div className="relative flex-1">
+          <SearchIcon className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+          <Input
+            placeholder="Search room name"
+            value={
+              (table.getColumn("roomName")?.getFilterValue() as string) ?? ""
+            }
+            onChange={(event) =>
+              table.getColumn("roomName")?.setFilterValue(event.target.value)
+            }
+            className="pl-10"
+          />
         </div>
-        <div className="flex items-center space-x-2">
-          <Button asChild variant="outline">
-            <Link href="rooms/create">
-              <Plus className="mr-2 h-4 w-4" /> Create Room
+        <div className="flex items-center gap-2">
+          <Button size="sm" asChild>
+            <Link href={'/dashboard/rooms/create'}>
+              <Plus className="mr-2 h-4 w-4" />
+              Add Room
             </Link>
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => roomData.refetch()}
+          >
+            <RefreshCw className="mr-2 h-4 w-4" />
+            Refresh
           </Button>
           <DeleteRoomPopups
             roomIds={table
               .getSelectedRowModel()
               .flatRows.map((row) => row.original.roomId)}
           />
-          <Button variant="outline" onClick={() => roomData.refetch()}>
-            <ReloadIcon className="mr-2 h-4 w-4" /> Refresh
-          </Button>
         </div>
       </div>
-
       <div className="rounded-md border bg-white shadow">
         <Table>
           <TableHeader>

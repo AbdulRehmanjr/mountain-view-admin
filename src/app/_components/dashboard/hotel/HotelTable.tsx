@@ -102,6 +102,7 @@ const columns: ColumnDef<HotelProps>[] = [
 ];
 
 export const HotelTable = () => {
+  
   const hotelData = api.hotel.getAllHotelBySellerId.useQuery();
   const [data, setData] = useState<HotelProps[]>([]);
   const [sorting, setSorting] = useState<SortingState>([]);

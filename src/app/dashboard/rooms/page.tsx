@@ -1,11 +1,16 @@
 import { RoomTable } from "~/app/_components/dashboard/room/RoomTable";
 
 export default function RoomPage() {
-
-    return (
-        <section className="flex flex-col gap-3">
-            <h1 className="text-xl md:text-3xl font-bold text-gray-900">Room Details</h1>
-            <RoomTable />
-        </section>
-    )
+  return (
+    <>
+      <div className="flex items-center">
+        <h1 className="text-lg font-semibold text-primary md:text-2xl">
+          Room Details
+        </h1>
+      </div>
+      <div className="flex flex-1 rounded-lg border border-dashed p-5 shadow-sm md:p-10">
+        <RoomTable />
+      </div>
+    </>
+  );
 }

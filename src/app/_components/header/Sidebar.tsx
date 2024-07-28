@@ -1,25 +1,36 @@
 import Link from "next/link";
 import {
+  Bed,
   Bell,
+  Building,
   Home,
-  LineChart,
-  Package,
   Package2,
-  ShoppingCart,
-  Users,
 } from "lucide-react";
 
-import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "~/components/ui/card";
-import { FaBuilding } from "react-icons/fa6";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "~/components/ui/card";
 
-export const SideBar = ()=> {
+export const SideBar = () => {
+  const links = [
+    { href: "/dashboard", icon: Home, label: "Dashbaord" },
+    { href: "/dashboard/hotels", icon: Building, label: "Hotels" },
+    { href: "/dashboard/rooms", icon: Bed, label: "Rooms" },
+  ];
+
   return (
-    <div className="bg-muted/40 hidden border-r md:block">
+    <div className="hidden border-r bg-muted/40 md:block">
       <div className="flex h-full max-h-screen flex-col gap-2">
         <div className="flex h-14 items-center border-b px-4 lg:h-[60px] lg:px-6">
-          <Link href="/dashboard" className="flex items-center gap-2 font-semibold">
+          <Link
+            href="/dashboard"
+            className="flex items-center gap-2 font-semibold"
+          >
             <Package2 className="h-6 w-6" />
             <span className="">PMS</span>
           </Link>
@@ -30,51 +41,16 @@ export const SideBar = ()=> {
         </div>
         <div className="flex-1">
           <nav className="grid items-start px-2 text-sm font-medium lg:px-4">
-            <Link
-              href="/dashboard"
-              className="text-muted-foreground hover:text-primary flex items-center gap-3 rounded-lg px-3 py-2 transition-all"
-            >
-              <Home className="h-4 w-4" />
-              Dashboard
-            </Link>
-            <Link
-              href="/dashboard/hotels"
-              className="text-muted-foreground hover:text-primary flex items-center gap-3 rounded-lg px-3 py-2 transition-all"
-            >
-              <FaBuilding className="h-4 w-4" />
-              Hotels
-            </Link>
-            <Link
-              href="#"
-              className="text-muted-foreground hover:text-primary flex items-center gap-3 rounded-lg px-3 py-2 transition-all"
-            >
-              <ShoppingCart className="h-4 w-4" />
-              Orders
-              <Badge className="ml-auto flex h-6 w-6 shrink-0 items-center justify-center rounded-full">
-                6
-              </Badge>
-            </Link>
-            <Link
-              href="#"
-              className="text-primary hover:text-primary flex items-center gap-3 rounded-lg px-3 py-2 transition-all"
-            >
-              <Package className="h-4 w-4" />
-              Products{" "}
-            </Link>
-            <Link
-              href="#"
-              className="text-muted-foreground hover:text-primary flex items-center gap-3 rounded-lg px-3 py-2 transition-all"
-            >
-              <Users className="h-4 w-4" />
-              Customers
-            </Link>
-            <Link
-              href="#"
-              className="text-muted-foreground hover:text-primary flex items-center gap-3 rounded-lg px-3 py-2 transition-all"
-            >
-              <LineChart className="h-4 w-4" />
-              Analytics
-            </Link>
+            {links.map((value, index) => (
+              <Link
+                key={index}
+                href={value.href}
+                className="flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary"
+              >
+                <value.icon className="h-4 w-4" />
+                {value.label}
+              </Link>
+            ))}
           </nav>
         </div>
         <div className="mt-auto p-4">
@@ -96,4 +72,4 @@ export const SideBar = ()=> {
       </div>
     </div>
   );
-}
+};

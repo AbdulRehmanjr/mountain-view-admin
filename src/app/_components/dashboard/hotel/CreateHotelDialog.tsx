@@ -53,7 +53,7 @@ export const CreateHotelDialog = () => {
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <Button variant="outline" size="sm">
+        <Button  size="sm">
           <Plus className="mr-2 h-4 w-4" />
           Add Hotel
         </Button>

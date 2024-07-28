@@ -1,246 +1,379 @@
-'use client'
+"use client";
 
-import { useForm } from "react-hook-form"
-import { api } from "~/trpc/react"
-import { useEffect, useState } from "react";
-import { CldUploadWidget, type CloudinaryUploadWidgetResults } from 'next-cloudinary';
+import { useForm } from "react-hook-form";
+import { api } from "~/trpc/react";
+import {useMemo, useState } from "react";
+import {
+  CldUploadWidget,
+  type CloudinaryUploadWidgetResults,
+} from "next-cloudinary";
 import { Input } from "~/components/ui/input";
-import { Label } from "~/components/ui/label";
 import { Textarea } from "~/components/ui/textarea";
 import { Button } from "~/components/ui/button";
-import { ReloadIcon } from "@radix-ui/react-icons";
 import { useToast } from "~/components/ui/use-toast";
 import { MultiSelect } from "react-multi-select-component";
-import Image from 'next/image'
-import { Check, Trash } from "lucide-react";
+import Image from "next/image";
+import { Check, Trash, UploadCloud } from "lucide-react";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "~/components/ui/card";
+import {
+  Form,
+  FormControl,
+  FormDescription,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "~/components/ui/form";
+import {
+  Select,
+  SelectTrigger,
+  SelectValue,
+  SelectContent,
+  SelectItem
+} from "~/components/ui/select";
+import { z } from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
+
 
 
 type FeatureProps = {
-    label: string
-    value: string
-}
+  label: string;
+  value: string;
+};
 
-type FormProps = {
-    roomName: string
-    price: number
-    hotel: string
-    beds: string
-    people: string
-    roomArea: string
-    quantity: string
-    roomType: string
-    description: string
-}
+const formSchema = z.object({
+  roomName: z.string({ required_error: "Field is required." }),
+  beds: z.number({ required_error: "Field is required." }),
+  hotel: z.string({ required_error: "Field is required." }),
+  area: z.number({ required_error: "Field is required." }),
+  capacity: z.number({ required_error: "Field is required." }),
+  quantity: z.number({ required_error: "Field is required." }),
+  roomType: z.string({ required_error: "Field is required." }),
+  description: z.string({ required_error: "Field is required." }),
+});
 
 const features: FeatureProps[] = [
-    { label: "Balcony", value: "Balcony" },
-    { label: "Garden view", value: "Garden view" },
-    { label: "Pool view", value: "Pool view" },
-    { label: "Mountain view", value: "Mountain view" },
-    { label: "Air condition", value: "Air condition" },
-    { label: "Own bathroom(ensuite)", value: "Own bathroom(ensuite)" },
-    { label: "Flat - screen TV", value: "Flat - screen TV" },
-    { label: "Terrace", value: "Terrace" },
-    { label: "Minibar", value: "Minibar" },
-    { label: "Safe", value: "Safe" },
-    { label: "Free Wifi", value: "Free Wifi" },
-    { label: "Hairdryer", value: "Hairdryer" },
-    { label: "Tea & coffee", value: "Tea & coffee" }
-]
+  { label: "Balcony", value: "Balcony" },
+  { label: "Garden view", value: "Garden view" },
+  { label: "Pool view", value: "Pool view" },
+  { label: "Mountain view", value: "Mountain view" },
+  { label: "Air condition", value: "Air condition" },
+  { label: "Own bathroom(ensuite)", value: "Own bathroom(ensuite)" },
+  { label: "Flat - screen TV", value: "Flat - screen TV" },
+  { label: "Terrace", value: "Terrace" },
+  { label: "Minibar", value: "Minibar" },
+  { label: "Safe", value: "Safe" },
+  { label: "Free Wifi", value: "Free Wifi" },
+  { label: "Hairdryer", value: "Hairdryer" },
+  { label: "Tea & coffee", value: "Tea & coffee" },
+];
 
 export const EditRoomForm = ({ roomId }: { roomId: string }) => {
+  const toast = useToast();
+  const [primary, setPrimary] = useState<string>("");
+  const [images, setImages] = useState<string[]>([]);
+  const [selected, setSelected] = useState<FeatureProps[]>([]);
 
-    const toast = useToast()
-    const [primary, setPrimary] = useState<string>('')
-    const [images, setImages] = useState<string[]>([])
-    const { register, handleSubmit, formState: { errors }, setValue } = useForm<FormProps>()
-    const [selected, setSelected] = useState<FeatureProps[]>([])
+  const roomData = api.room.getRoomById.useQuery({ roomId: roomId });
+  const hotelData = api.hotel.getAllHotelBySellerId.useQuery();
 
-    const roomData = api.room.getRoomById.useQuery({ roomId: roomId })
-    const hotelData = api.hotel.getAllHotelBySellerId.useQuery()
+  const form = useForm<z.infer<typeof formSchema>>({
+    resolver: zodResolver(formSchema),
+  });
 
-    useEffect(() => {
-
-        const info = roomData.data
-        if (info) {
-            setValue('roomName', info.roomName)
-            setValue('description', info.description)
-            setValue('beds', info.beds+"")
-            setValue('roomArea', info.area + "")
-            setValue('people', info.capacity + "")
-            setValue('hotel', info.hotelHotelId)
-            setValue('roomType', info.roomType)
-            // setValue('quantity', info.quantity + "")
-            setImages(info.pictures ?? [])
-            setPrimary(() => (info?.dp ?? ""))
-            setSelected(() => info.features.map((feature) => ({ label: feature, value: feature })))
-        }
-    }, [roomData.data, setValue])
-
-    const updateRoom = api.room.editRoom.useMutation({
-        onSuccess: () => {
-            toast.toast({
-                title: 'Success!',
-                description: 'Room added successfully.'
-            })
-        },
-        onError: () => {
-            toast.toast({
-                variant: 'destructive',
-                title: 'Oop!',
-                description: 'Something went wrong.'
-            })
-        },
-    })
-
-
-    const removeImage = (index: number) => {
-        if (roomData.data?.pictures) {
-            const newImages = [...roomData.data.pictures.slice(0, index), ...roomData.data.pictures.slice(index + 1)];
-            setImages(() => newImages)
-            roomData.data?.pictures.splice(index, 1)
-        }
+  useMemo(() => {
+    const info = roomData.data;
+    if (info) {
+      form.setValue("roomName", info.roomName);
+      form.setValue("description", info.description);
+      form.setValue("beds", info.beds);
+      form.setValue("area", info.area);
+      form.setValue("capacity", info.capacity);
+      form.setValue("hotel", info.hotelHotelId);
+      form.setValue("roomType", info.roomType);
+      form.setValue("quantity", info.quantity);
+      setImages(info.pictures ?? []);
+      setPrimary(() => info?.dp ?? "");
+      setSelected(() =>
+        info.features.map((feature) => ({ label: feature, value: feature })),
+      );
     }
+  }, [form, roomData.data]);
 
-    const formSubmitted = (data: FormProps) => {
-        updateRoom.mutate({
-            roomId: roomId,
-            roomName: data.roomName,
-            description: data.description,
-            price: data.price+"",
-            beds: +data.beds,
-            capacity: +data.people,
-            features: selected.map((feature: FeatureProps) => feature.value),
-            dp: primary,
-            area: +data.roomArea,
-            roomType: data.roomType,
-            images: images,
-            quantity: +data.quantity,
-        })
+  const updateRoom = api.room.editRoom.useMutation({
+    onSuccess: () => {
+      toast.toast({
+        title: "Success!",
+        description: "Room added successfully.",
+      });
+    },
+    onError: () => {
+      toast.toast({
+        variant: "destructive",
+        title: "Oop!",
+        description: "Something went wrong.",
+      });
+    },
+  });
+
+  const removeImage = (index: number) => {
+    if (roomData.data?.pictures) {
+      const newImages = [
+        ...roomData.data.pictures.slice(0, index),
+        ...roomData.data.pictures.slice(index + 1),
+      ];
+      setImages(() => newImages);
+      roomData.data?.pictures.splice(index, 1);
     }
+  };
 
-    return (
-        <form onSubmit={handleSubmit(formSubmitted)} className="grid grid-cols-2 gap-2">
-            <div className="col-span-1 flex flex-col gap-1">
-                <Label htmlFor="roomName" >Hotel Name</Label>
-                <Input id="roomName" className="col-span-3" {...register('roomName', { required: "Field is required." })} type="text" placeholder="Enter room name" />
-                {errors.roomName?.message && (<small className="text-red-600">{errors.roomName.message}</small>)}
-            </div>
-            <div className="col-span-1 flex flex-col gap-1">
-                <Label htmlFor="price" >Price per day</Label>
-                <Input id="price" className="col-span-3" {...register('price', { required: "Field is required." })} type="number" placeholder="Enter price" />
-                {errors.price?.message && (<small className="text-red-600">{errors.price.message}</small>)}
-            </div>
-            <div className="col-span-1 flex flex-col gap-1">
-                <Label htmlFor="price" >Hotel Name</Label>
-                <select className="border-[1px] p-[6px] rounded-md text-sm" {...register('hotel', { required: "Field is required." })} >
-                    <option value="">Select the Hotel</option>
-                    {hotelData.data?.map((hotel) => (
-                        <option value={hotel.hotelId} key={hotel.hotelId}>{hotel.hotelName}</option>
-                    ))}
-                </select>
-                {errors.hotel?.message && (<small className="text-red-600">{errors.hotel.message}</small>)}
-            </div>
-            <div className="col-span-1 flex flex-col gap-1">
-                <Label htmlFor="beds" >No. of beds</Label>
-                <Input id="beds" className="col-span-3" {...register('beds', { required: "Filed is Required.", pattern: { value: /^[1-9]\d*$/, message: 'Value must be a positive integer greater than 0' } })} type="number" placeholder="Enter no. of beds" />
-                {errors.beds?.message && (<small className="text-red-600">{errors.beds.message}</small>)}
-            </div>
-            <div className="col-span-1 flex flex-col gap-1">
-                <Label htmlFor="people" >No. of people</Label>
-                <Input id="people" className="col-span-3" {...register('people', { required: "Filed is Required.", pattern: { value: /^[1-9]\d*$/, message: 'Value must be a positive integer greater than 0' } })} type="number" placeholder="Enter no. of people" />
-                {errors.people?.message && (<small className="text-red-600">{errors.people.message}</small>)}
-            </div>
-            <div className="col-span-1 flex flex-col gap-1">
-                <Label htmlFor="roomArea" >Room Area m<sup>2</sup></Label>
-                <Input id="roomArea" className="col-span-3" {...register('roomArea', { required: "Filed is Required.", pattern: { value: /^[1-9]\d*$/, message: 'Value must be a positive integer greater than 0' } })} type="number" placeholder="Enter room area" />
-                {errors.roomArea?.message && (<small className="text-red-600">{errors.roomArea.message}</small>)}
-            </div>
-            <div className="col-span-1 flex flex-col gap-1">
-                <Label htmlFor="quantity" >Room quantity</Label>
-                <Input id="quantity" className="col-span-3" {...register('quantity', { required: "Filed is Required.", pattern: { value: /^[1-9]\d*$/, message: 'Value must be a positive integer greater than 0' } })} type="number" placeholder="Enter room name" />
-                {errors.quantity?.message && (<small className="text-red-600">{errors.quantity.message}</small>)}
-            </div>
-            <div className="col-span-1 flex flex-col gap-1">
-                <Label htmlFor="roomType" >Room Type</Label>
-                <select className="border-[1px] p-[6px] rounded-md text-sm" {...register('roomType', { required: "Field is required." })} >
-                    <option value="">Select the type</option>
-                    <option value="deluxe" >Deluxe Room</option>
-                    <option value="superior" >Superior Room</option>
-                    <option value="family" >Family Room</option>
-                </select>
-                {errors.roomType?.message && (<small className="text-red-600">{errors.roomType.message}</small>)}
-            </div>
-            <div className="col-span-2 flex flex-col gap-1">
-                <Label htmlFor="features" >Room Features</Label>
-                <MultiSelect
+  const formSubmitted = (data: z.infer<typeof formSchema>) => {
+    updateRoom.mutate({
+      roomId: roomId,
+      roomName: data.roomName,
+      description: data.description,
+      beds: data.beds,
+      capacity: data.capacity,
+      features: selected.map((feature: FeatureProps) => feature.value),
+      dp: primary,
+      area: data.area,
+      roomType: data.roomType,
+      images: images,
+      quantity: +data.quantity,
+    });
+  };
+
+  return (
+        <Form {...form}>
+        <form onSubmit={form.handleSubmit(formSubmitted)} className="space-y-8 w-full">
+          <Card>
+            <CardHeader>
+              <CardTitle>Edit Room</CardTitle>
+              <CardDescription>Update the details of your room.</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <FormField
+                  control={form.control}
+                  name="roomName"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Room Name</FormLabel>
+                      <FormControl>
+                        <Input placeholder="Enter room name" {...field} value={field.value ?? ''} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="hotel"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Hotel</FormLabel>
+                      <Select onValueChange={field.onChange} defaultValue={field.value}>
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select the Hotel" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {hotelData.data?.map((hotel) => (
+                            <SelectItem key={hotel.hotelId} value={hotel.hotelId}>
+                              {hotel.hotelName}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="beds"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>No. of beds</FormLabel>
+                      <FormControl>
+                        <Input type="number" placeholder="Enter no. of beds" {...field} value={field.value ?? ''} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="capacity"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>No. of people</FormLabel>
+                      <FormControl>
+                        <Input type="number" placeholder="Enter no. of people" {...field} value={field.value ?? ''} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="capacity"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Room Area (m²)</FormLabel>
+                      <FormControl>
+                        <Input type="number" placeholder="Enter room area" {...field} value={field.value ?? ''} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="quantity"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Room quantity</FormLabel>
+                      <FormControl>
+                        <Input type="number" placeholder="Enter room quantity" {...field} value={field.value ?? ''} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="roomType"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Room Type</FormLabel>
+                      <Select onValueChange={field.onChange} defaultValue={field.value}>
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select the type" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectItem value="deluxe">Deluxe Room</SelectItem>
+                          <SelectItem value="superior">Superior Room</SelectItem>
+                          <SelectItem value="family">Family Room</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+              <FormField
+                control={form.control}
+                name="description"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Description</FormLabel>
+                    <FormControl>
+                      <Textarea
+                        placeholder="Type description here."
+                        className="resize-none"
+                        {...field} value={field.value ?? ''}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormItem>
+                <FormLabel>Room Features</FormLabel>
+                <FormControl>
+                  <MultiSelect
                     options={features}
                     value={selected}
                     onChange={setSelected}
-                    labelledBy="Select"
-                />
-            </div>
-            <div className="col-span-2 flex flex-col gap-1">
-                <Label htmlFor="description" >Room Type</Label>
-                <Textarea placeholder="Type description here." id="message-2" {...register('description', { required: "Hotel Name is Required." })} />
-                {errors.description?.message && (<small className="text-red-600">{errors.description.message}</small>)}
-            </div>
-            <div className="col-span-2 flex flex-col gap-1 ">
-                <Label  >Images</Label>
-                <menu className="flex flex-wrap h-[12rem] overflow-hidden overflow-y-scroll gap-2">
-                    {
-                        images.length != 0 && images.map((url: string, index: number) => (
-                            <li key={index} className="flex flex-col items-center gap-2 border-2  p-3">
-                                <Image src={url ?? 'https://placehold.co/600x400.png'} className="aspect-square" width={100} height={100} alt="product image" priority />
-                                <div className="flex gap-3">
-                                    <button title="remove-image" type="button" className={`${primary == url ? "border-2 bg-green-600 text-white" : "border-2 border-green=600 text-green-600"} px-2 py-2`} onClick={() => setPrimary(() => url)}>
-                                        <Check className="w-4 h-4" />
-                                    </button>
-                                    <button title="remove-image" type="button" className="bg-red-600 text-white px-2 py-2" onClick={() => removeImage(index)}>
-                                        <Trash className="w-4 h-4" />
-                                    </button>
-                                </div>
-                            </li>
-                        ))
-                    }
-                </menu>
-            </div>
-            <div className="col-span-2 flex flex-col gap-1">
-                <label htmlFor="room">Room Pictures</label>
-                <CldUploadWidget
-                    options={{ sources: ['local'] }}
+                    labelledBy="Select features"
+                  />
+                </FormControl>
+              </FormItem>
+              <FormItem>
+                <FormLabel>Images</FormLabel>
+                <FormControl>
+                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                    {images.map((url, index) => (
+                      <div key={index} className="relative group">
+                        <Image
+                          src={url}
+                          alt={`Room image ${index + 1}`}
+                          width={200}
+                          height={200}
+                          className="object-cover w-full h-40 rounded-lg"
+                        />
+                        <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black bg-opacity-50 rounded-lg">
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => setPrimary(url)}
+                            className={`${
+                              primary === url ? "bg-green-500" : "bg-white"
+                            } mr-2`}
+                          >
+                            <Check className={`h-4 w-4 ${primary === url ? "text-white" : "text-green-500"}`} />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => removeImage(index)}
+                            className="bg-white"
+                          >
+                            <Trash className="h-4 w-4 text-red-500" />
+                          </Button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </FormControl>
+              </FormItem>
+              <FormItem>
+                <FormControl>
+                  <CldUploadWidget
+                    options={{ sources: ['local'], maxFiles: 5 }}
                     uploadPreset="pam101"
-                    onSuccess={(result: CloudinaryUploadWidgetResults) => {
-                        const info = result.info
-                        if (typeof info != 'string')
-                            setImages((prev) => {
-                                const flag = prev.every((image) => image != info?.secure_url)
-                                if (flag)
-                                    prev.push(info?.secure_url ?? "")
-                                return prev
-
-                            })
+                    onSuccess={(result) => {
+                      const info = result.info;
+                      if (typeof info === 'object' && info.secure_url) {
+                        setImages((prev) => [...new Set([...prev, info.secure_url])]);
+                      }
                     }}
-                >
-                    {({ open }) => {
-                        function handleOnClick() {
-                            open()
-                        }
-                        return (
-                            <button type="button" className="bg-gray-900 text-white w-fit p-2 rounded-md" onClick={handleOnClick}>
-                                Upload Image
-                            </button>
-                        );
-                    }}
-                </CldUploadWidget>
-            </div>
-            <div className="col-span-2 flex item-center justify-center">
-                <Button type="submit" disabled={updateRoom.isLoading}>
-                    {
-                        updateRoom.isLoading ? <> <ReloadIcon className="mr-2 h-4 w-4 animate-spin" />Please wait</> : 'Update Room'
-                    }
-                </Button>
-            </div>
+                  >
+                    {({ open }) => (
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() => open()}
+                        className="w-fit"
+                      >
+                        <UploadCloud className="mr-2 h-4 w-4" /> Upload Images
+                      </Button>
+                    )}
+                  </CldUploadWidget>
+                </FormControl>
+                <FormDescription>
+                  You can upload up to 5 images. Click on an image to set it as the primary image.
+                </FormDescription>
+              </FormItem>
+            </CardContent>
+            <CardFooter>
+              <Button type="submit" className="w-full" disabled={updateRoom.isLoading}>
+                {updateRoom.isLoading ? "Updating..." : "Update Room"}
+              </Button>
+            </CardFooter>
+          </Card>
         </form>
-    )
-}
+      </Form>
+  );
+};

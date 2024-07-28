@@ -3,8 +3,8 @@
 import { useMemo, useState } from "react";
 import dayjs, { type Dayjs } from "dayjs";
 import { useHotelAdmin } from "~/utils/store";
-import { ShadcnButton } from "~/app/_components/general/shadcn-button";
 import { cn } from "~/lib/utils";
+import { Button } from "~/components/ui/button";
 
 export const CalendarForm = ({
   pricesData,
@@ -80,6 +80,7 @@ export const CalendarForm = ({
     const getPrice = (date: Dayjs, roomId: string): number => {
       if (pricesData) {
         const roomPrices = pricesData.get(roomId);
+        console.log(roomPrices)
         if (!roomPrices) return 0;
         const dateString = date.format("YYYY-MM-DD");
         const priceEntry = roomPrices.find(
@@ -118,17 +119,17 @@ export const CalendarForm = ({
   return (
     <div className="w-full">
       <div className="mb-4 flex items-center justify-between">
-        <ShadcnButton
-          title="Prev"
-          type="button"
-          onClick={handlePreviousMonth}
-        />
+        <Button type="button" onClick={handlePreviousMonth}>
+          Prev
+        </Button>
         <p className="text-lg font-bold text-gray-900 md:text-xl">
           {selectedDate
             ? selectedDate.format("MMMM YYYY")
             : dayjs().format("MMMM YYYY")}
         </p>
-        <ShadcnButton title="Next" type="button" onClick={handleNextMonth} />
+        <Button type="button" onClick={handleNextMonth}>
+          Next
+        </Button>
       </div>
       <div className="overflow-x-auto">
         <table className="w-full rounded-md bg-white">

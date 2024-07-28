@@ -15,7 +15,7 @@ export const RoomRouter = createTRPCRouter({
             features: z.string().array(),
             images: z.string().array(),
             hotelId: z.string(),
-            number: z.number()
+            quantity: z.number()
         }))
         .mutation(async ({ ctx, input }) => {
             try {
@@ -29,7 +29,7 @@ export const RoomRouter = createTRPCRouter({
                         features: input.features,
                         pictures: input.images,
                         roomType: input.roomType,
-                        quantity: input.number,
+                        quantity: input.quantity,
                         hotelHotelId: input.hotelId,
                         dp: input.images[0]
                     }
@@ -48,7 +48,6 @@ export const RoomRouter = createTRPCRouter({
             roomName: z.string(),
             description: z.string(),
             beds: z.number(),
-            price: z.string(),
             capacity: z.number(),
             features: z.string().array(),
             dp: z.string(),

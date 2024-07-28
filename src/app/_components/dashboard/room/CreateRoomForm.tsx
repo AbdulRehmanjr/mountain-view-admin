@@ -111,22 +111,25 @@ export const CreateRoomForm = () => {
       roomName: data.roomName,
       description: data.description,
       hotelId: data.hotel,
-      beds: +data.beds,
-      capacity: +data.capacity,
-      area: +data.roomArea,
+      beds: data.beds,
+      capacity: data.capacity,
+      area: data.roomArea,
       roomType: data.roomType,
       features: selected.map((feature: FeatureProps) => feature.value),
       images: urls,
-      number: +data.quantity,
+      quantity: data.quantity,
     });
   };
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(formSubmitted)} className="space-y-8">
+      <form
+        onSubmit={form.handleSubmit(formSubmitted)}
+        className="w-full space-y-8"
+      >
         <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
           <Card className="shadow-md">
-            <CardHeader>
+            <CardHeader className="text-primary">
               <CardTitle className="text-2xl">Room Information</CardTitle>
               <CardDescription>
                 Enter the basic details of the room
@@ -140,7 +143,11 @@ export const CreateRoomForm = () => {
                   <FormItem>
                     <FormLabel>Room Name</FormLabel>
                     <FormControl>
-                      <Input placeholder="Enter room name" {...field} />
+                      <Input
+                        placeholder="Enter room name"
+                        {...field}
+                        value={field.value ?? ""}
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -156,6 +163,7 @@ export const CreateRoomForm = () => {
                       <Textarea
                         placeholder="Enter room description"
                         {...field}
+                        value={field.value ?? ""}
                         rows={4}
                       />
                     </FormControl>
@@ -171,10 +179,20 @@ export const CreateRoomForm = () => {
                     <FormLabel>Room Price</FormLabel>
                     <FormControl>
                       <Input
-                        type="number"
                         placeholder="Enter price"
                         {...field}
-                        onChange={(e) => field.onChange(Number(e.target.value))}
+                        value={field.value ?? ""}
+                        onChange={(e) => {
+                          const value = e.target.value;
+                          if (
+                            value === "" ||
+                            (/^\d+$/.test(value) && parseInt(value) > 0)
+                          ) {
+                            field.onChange(
+                              value === "" ? undefined : parseInt(value),
+                            );
+                          }
+                        }}
                       />
                     </FormControl>
                     <FormMessage />
@@ -185,7 +203,7 @@ export const CreateRoomForm = () => {
           </Card>
 
           <Card className="shadow-md">
-            <CardHeader>
+            <CardHeader className="text-primary">
               <CardTitle className="text-2xl">Room Capacity</CardTitle>
               <CardDescription>
                 Specify the room&apos;s capacity details
@@ -200,10 +218,20 @@ export const CreateRoomForm = () => {
                     <FormLabel>Number of Beds</FormLabel>
                     <FormControl>
                       <Input
-                        type="number"
                         placeholder="Enter number of beds"
                         {...field}
-                        onChange={(e) => field.onChange(Number(e.target.value))}
+                        value={field.value ?? ""}
+                        onChange={(e) => {
+                          const value = e.target.value;
+                          if (
+                            value === "" ||
+                            (/^\d+$/.test(value) && parseInt(value) > 0)
+                          ) {
+                            field.onChange(
+                              value === "" ? undefined : parseInt(value),
+                            );
+                          }
+                        }}
                       />
                     </FormControl>
                     <FormMessage />
@@ -218,10 +246,20 @@ export const CreateRoomForm = () => {
                     <FormLabel>Room Capacity</FormLabel>
                     <FormControl>
                       <Input
-                        type="number"
                         placeholder="Enter room capacity"
                         {...field}
-                        onChange={(e) => field.onChange(Number(e.target.value))}
+                        value={field.value ?? ""}
+                        onChange={(e) => {
+                          const value = e.target.value;
+                          if (
+                            value === "" ||
+                            (/^\d+$/.test(value) && parseInt(value) > 0)
+                          ) {
+                            field.onChange(
+                              value === "" ? undefined : parseInt(value),
+                            );
+                          }
+                        }}
                       />
                     </FormControl>
                     <FormMessage />
@@ -236,10 +274,20 @@ export const CreateRoomForm = () => {
                     <FormLabel>Room Area (sqm)</FormLabel>
                     <FormControl>
                       <Input
-                        type="number"
                         placeholder="Enter room area"
                         {...field}
-                        onChange={(e) => field.onChange(Number(e.target.value))}
+                        value={field.value ?? ""}
+                        onChange={(e) => {
+                          const value = e.target.value;
+                          if (
+                            value === "" ||
+                            (/^\d+$/.test(value) && parseInt(value) > 0)
+                          ) {
+                            field.onChange(
+                              value === "" ? undefined : parseInt(value),
+                            );
+                          }
+                        }}
                       />
                     </FormControl>
                     <FormMessage />
@@ -254,10 +302,20 @@ export const CreateRoomForm = () => {
                     <FormLabel>Number of Rooms</FormLabel>
                     <FormControl>
                       <Input
-                        type="number"
                         placeholder="Enter number of rooms"
                         {...field}
-                        onChange={(e) => field.onChange(Number(e.target.value))}
+                        value={field.value ?? ""}
+                        onChange={(e) => {
+                          const value = e.target.value;
+                          if (
+                            value === "" ||
+                            (/^\d+$/.test(value) && parseInt(value) > 0)
+                          ) {
+                            field.onChange(
+                              value === "" ? undefined : parseInt(value),
+                            );
+                          }
+                        }}
                       />
                     </FormControl>
                     <FormMessage />
@@ -268,7 +326,7 @@ export const CreateRoomForm = () => {
           </Card>
 
           <Card className="shadow-md">
-            <CardHeader>
+            <CardHeader className="text-primary">
               <CardTitle className="text-2xl">Room Type & Features</CardTitle>
               <CardDescription>
                 Select room type, hotel, and features
@@ -336,38 +394,38 @@ export const CreateRoomForm = () => {
         </div>
 
         <Card className="shadow-md">
-          <CardHeader>
+          <CardHeader className="text-primary">
             <CardTitle className="text-2xl">Room Images</CardTitle>
             <CardDescription>Upload images of the room</CardDescription>
           </CardHeader>
           <CardContent>
-          <CldUploadWidget
-                options={{ sources: ["local"] }}
-                uploadPreset="pam101"
-                onSuccess={(result: CloudinaryUploadWidgetResults) => {
-                  const info = result.info;
-                  if (typeof info != "string")
-                    setUrls((prev) => {
-                      const flag = prev.every(
-                        (image) => image != info?.secure_url,
-                      );
-                      if (flag) prev.push(info?.secure_url ?? "");
-                      return prev;
-                    });
-                  setAllow(true);
-                }}
-              >
-                {({ open }) => {
-                  function handleOnClick() {
-                    open();
-                  }
-                  return (
-                    <Button type="button" onClick={handleOnClick}>
-                      Upload Image
-                    </Button>
-                  );
-                }}
-              </CldUploadWidget>
+            <CldUploadWidget
+              options={{ sources: ["local"] }}
+              uploadPreset="pam101"
+              onSuccess={(result: CloudinaryUploadWidgetResults) => {
+                const info = result.info;
+                if (typeof info != "string")
+                  setUrls((prev) => {
+                    const flag = prev.every(
+                      (image) => image != info?.secure_url,
+                    );
+                    if (flag) prev.push(info?.secure_url ?? "");
+                    return prev;
+                  });
+                setAllow(true);
+              }}
+            >
+              {({ open }) => {
+                function handleOnClick() {
+                  open();
+                }
+                return (
+                  <Button type="button" onClick={handleOnClick}>
+                    Upload Image
+                  </Button>
+                );
+              }}
+            </CldUploadWidget>
           </CardContent>
         </Card>
 

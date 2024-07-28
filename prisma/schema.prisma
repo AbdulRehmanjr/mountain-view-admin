@@ -113,12 +113,13 @@ model MyRentGroup {
 }
 
 model Discounts {
-  discountId String @id @default(uuid())
-  discount   Int    @default(0)
-  title      String @default("none")
-  redeemCode String @unique
-  endDate    String @default("none")
-  startDate  String @default("none")
+  discountId String   @id @default(uuid())
+  discount   Int      @default(0)
+  title      String   @default("none")
+  redeemCode String   @unique
+  endDate    String   @default("none")
+  startDate  String   @default("none")
+  createdAt  DateTime @default(now())
 }
 
 model SellerPayPal {

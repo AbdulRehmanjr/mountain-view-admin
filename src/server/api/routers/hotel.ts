@@ -1,7 +1,4 @@
-/* eslint-disable @typescript-eslint/no-unsafe-return */
-/* eslint-disable @typescript-eslint/no-unsafe-assignment */
-/* eslint-disable @typescript-eslint/no-unsafe-member-access */
-/* eslint-disable @typescript-eslint/no-unsafe-call */
+
 import { createTRPCRouter, protectedProcedure } from "../trpc";
 import z from 'zod'
 import { TRPCClientError } from "@trpc/client";
@@ -44,13 +41,9 @@ export const HotelRouter = createTRPCRouter({
 
     getAllHotelBySellerId: protectedProcedure
         .query(async ({ ctx }) => {
-
-            const session = await getServerAuthSession()
-            if (!session)
-                throw new TRPCClientError("Action not allow to current user")
             try {
                 const hotels: HotelProps[] = await ctx.db.hotel.findMany({
-                    where: { sellerInfoSellerId: session.user.sellerId }
+                    where: { sellerInfoSellerId: ctx.session.user.sellerId }
                 })
                 return hotels
             } catch (error) {

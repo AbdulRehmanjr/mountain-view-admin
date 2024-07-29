@@ -40,7 +40,6 @@ model Room {
   beds         Int           @default(0)
   quantity     Int           @default(1)
   BlockDate    BlockDate[]
-  MyRentInfo   MyRentInfo[]
   hotel        Hotel         @relation(fields: [hotelHotelId], references: [hotelId], onDelete: Cascade)
   RoomBooking  RoomBooking[]
 }
@@ -107,14 +106,6 @@ model GoogleToken {
   @@index([email])
 }
 
-model MyRentGroup {
-  id        String @id @default(uuid())
-  groupId   Int    @default(0)
-  groupName String @unique
-
-  @@index([groupName, groupId])
-}
-
 model Discounts {
   discountId String   @id @default(uuid())
   discount   Int      @default(0)
@@ -133,15 +124,6 @@ model SellerPayPal {
   email             String @unique
 
   @@index([email, trackingId])
-}
-
-model MyRentInfo {
-  myRentId   String @id @default(uuid())
-  propertyId String @default("none")
-  userId     String @default("none")
-  erpId      String @default("none")
-  roomRoomId String
-  Room       Room   @relation(fields: [roomRoomId], references: [roomId], onDelete: Cascade)
 }
 
 model PayPalBoookingInfo {

@@ -1,9 +1,8 @@
 import { createTRPCRouter, protectedProcedure } from "../trpc";
 import z from 'zod'
 import { TRPCClientError } from "@trpc/client";
-import { env } from "~/env";
-import axios, { AxiosError } from "axios";
 import dayjs from "dayjs";
+import { AxiosError } from "axios";
 
 export const PriceRouter = createTRPCRouter({
 
@@ -68,20 +67,6 @@ export const PriceRouter = createTRPCRouter({
             try {
 
                 const roomDetails = await ctx.db.room.findUnique({ where: { roomId: input.roomId } });
-                const myRentGroup = await ctx.db.myRentGroup.findUnique({ where: { groupName: roomDetails?.roomType ?? 'none' } });
-
-                const config = {
-                    headers: {
-                        'Accept': 'application/json',
-                        'Accept-Language': 'en_US',
-                        'b2b_guid': env.B2B_GUID,
-                        'user_guid': env.USER_GUID
-                    },
-                };
-
-                const url = `https://api.my-rent.net/user/grp_prices_set/${myRentGroup?.groupId}?date_from=${input.startDate}&date_until=${input.endDate}&price=${input.price}`;
-
-                await axios.post(url, {}, config);
 
                 const overlappingRecords = await ctx.db.roomPrice.findMany({
                     where: {
@@ -184,21 +169,6 @@ export const PriceRouter = createTRPCRouter({
         .input(z.object({ startDate: z.string(), endDate: z.string(), roomId: z.string() }))
         .mutation(async ({ ctx, input }) => {
             try {
-
-                // const groudId = 'groupId'
-                // const [firstDate, , lastDate] = input.dates;
-                // const config = {
-                //     headers: {
-                //         'Accept': 'application/json',
-                //         'Accept-Language': 'en_US',
-                //         'b2b_guid': env.B2B_GUID,
-                //         'user_guid': env.USER_GUID
-                //     },
-                // }
-                // const url = `https://api.my-rent.net/user/group_set_enable/${groudId}?date_from=${firstDate}&date_until=${lastDate}&enable=N`
-
-                // await axios.post(url, {}, config)
-
                 const existingDates = await ctx.db.blockDate.findMany({
                     where: {
                         roomRoomId: input.roomId,
@@ -221,8 +191,6 @@ export const PriceRouter = createTRPCRouter({
                         ]
                     }
                 })
-
-                console.log(existingDates)
 
                 for (const date of existingDates) {
                     if (date.startDate < input.startDate && date.endDate > input.endDate) {

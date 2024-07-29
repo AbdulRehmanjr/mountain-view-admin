@@ -218,7 +218,7 @@ export const EditDiscountForm = ({ discountId }: { discountId: string }) => {
                 Please wait
               </>
             ) : (
-              "Create Discount"
+              "Update discount"
             )}
           </Button>
         </div>

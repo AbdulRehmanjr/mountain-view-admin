@@ -101,7 +101,10 @@ model BlockDate {
 
 model GoogleToken {
   tokenId      String @id @default(uuid())
+  email        String @default("none")
   refreshToken String @default("none")
+
+  @@index([email])
 }
 
 model MyRentGroup {

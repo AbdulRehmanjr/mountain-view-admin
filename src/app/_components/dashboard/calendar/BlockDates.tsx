@@ -11,9 +11,9 @@ import {
   AlertDialogTitle,
 } from "~/components/ui/alert-dialog";
 import { useHotelAdmin } from "~/utils/store";
-import { ShadcnButton } from "~/app/_components/general/shadcn-button";
 import { api } from "~/trpc/react";
 import dayjs from "dayjs";
+import { Button } from "~/components/ui/button";
 
 export const BlockDates = () => {
   const { blockDate, blockDialog, setBlockDialog, setBlockDate } =
@@ -38,8 +38,7 @@ export const BlockDates = () => {
         <AlertDialogFooter>
           <AlertDialogCancel>Cancel</AlertDialogCancel>
           <AlertDialogAction asChild>
-            <ShadcnButton
-              title="Continue"
+            <Button
               type="button"
               disabled={createBlockDate.isLoading}
               onClick={() =>
@@ -49,7 +48,9 @@ export const BlockDates = () => {
                   roomId: blockDate.roomId,
                 })
               }
-            />
+            >
+              Continue
+            </Button>
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>

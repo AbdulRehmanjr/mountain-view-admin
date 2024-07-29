@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import { zodResolver } from "@hookform/resolvers/zod";
 import { ReloadIcon, RocketIcon } from "@radix-ui/react-icons";
-import { PencilIcon, Plus } from "lucide-react";
+import { PencilIcon } from "lucide-react";
 import { useMemo } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";

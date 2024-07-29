@@ -1,7 +1,7 @@
 import { getAuthAssertionValue } from "~/utils";
 import { createTRPCRouter, protectedProcedure, publicProcedure } from "../trpc";
 import { TRPCClientError } from "@trpc/client";
-import axios, { AxiosError, type AxiosResponse } from "axios";
+import { AxiosError } from "axios";
 import { z } from "zod";
 import { env } from "~/env";
 

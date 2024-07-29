@@ -1,15 +1,13 @@
 "use client";
 import { useMemo, useState } from "react";
 import dayjs, { type Dayjs } from "dayjs";
-import Loading from "~/app/loading";
 import { api } from "~/trpc/react";
 import isBetween from "dayjs/plugin/isBetween";
 import { cn } from "~/lib/utils";
-import { ShadcnButton } from "~/app/_components/general/shadcn-button";
 import { Button } from "~/components/ui/button";
 import { useHotelAdmin } from "~/utils/store";
 import { BlockDates } from "~/app/_components/dashboard/calendar/BlockDates";
-
+import { CalendarSkeleton } from "~/app/_components/dashboard/skeletons/CalendarSkeleton";
 dayjs.extend(isBetween);
 
 export const BookingCalendar = () => {
@@ -109,104 +107,100 @@ export const BookingCalendar = () => {
     const isBlocked = isDateBlocked(date, roomId);
 
     return (
-      <td>
-        <Button
-          type="button"
-          className={cn(
-            "relative flex flex-col items-center justify-center border-[1px] bg-transparent text-center text-xs text-blue-700 hover:cursor-pointer hover:bg-transparent sm:text-sm",
-            isSelected &&
-              "bg-blue-600 text-white hover:bg-blue-600 hover:text-white",
-            isBooked && "bg-yellow-200 text-gray-700 hover:bg-yellow-300",
-            className,
-          )}
-          onClick={() => handleDateClick(date, roomId)}
-          disabled={isBooked}
-        >
-          {date.date()}
-          {isBooked && (
-            <svg
-              className="pointer-events-none absolute inset-0 h-full w-full"
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 100 100"
-              preserveAspectRatio="none"
-            >
-              <line
-                x1="0"
-                y1="0"
-                x2="100"
-                y2="100"
-                stroke="red"
-                strokeWidth="3"
-              />
-              <line
-                x1="100"
-                y1="0"
-                x2="0"
-                y2="100"
-                stroke="red"
-                strokeWidth="3"
-              />
-            </svg>
-          )}
-          {isBlocked && (
-            <svg
-              className="pointer-events-none absolute inset-0 h-full w-full"
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 100 100"
-              preserveAspectRatio="none"
-            >
-              <line
-                x1="0"
-                y1="0"
-                x2="100"
-                y2="100"
-                stroke="red"
-                strokeWidth="3"
-              />
-              <line
-                x1="100"
-                y1="0"
-                x2="0"
-                y2="100"
-                stroke="red"
-                strokeWidth="3"
-              />
-            </svg>
-          )}
-        </Button>
-      </td>
+      <Button
+        type="button"
+        className={cn(
+          "relative flex cursor-pointer flex-col items-center justify-center border-[1px] bg-transparent p-0.5 text-center text-[10px] text-gray-950 hover:cursor-pointer hover:bg-transparent sm:text-xs",
+          isSelected &&
+            "bg-blue-600 text-white hover:bg-blue-600 hover:text-white",
+          isBooked && "bg-yellow-200 text-gray-700 hover:bg-yellow-300",
+          className,
+        )}
+        onClick={() => handleDateClick(date, roomId)}
+        disabled={isBooked}
+      >
+        {date.date()}
+        {isBooked && (
+          <svg
+            className="pointer-events-none absolute inset-0 h-full w-full"
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 100 100"
+            preserveAspectRatio="none"
+          >
+            <line
+              x1="0"
+              y1="0"
+              x2="100"
+              y2="100"
+              stroke="red"
+              strokeWidth="3"
+            />
+            <line
+              x1="100"
+              y1="0"
+              x2="0"
+              y2="100"
+              stroke="red"
+              strokeWidth="3"
+            />
+          </svg>
+        )}
+        {isBlocked && (
+          <svg
+            className="pointer-events-none absolute inset-0 h-full w-full"
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 100 100"
+            preserveAspectRatio="none"
+          >
+            <line
+              x1="0"
+              y1="0"
+              x2="100"
+              y2="100"
+              stroke="red"
+              strokeWidth="3"
+            />
+            <line
+              x1="100"
+              y1="0"
+              x2="0"
+              y2="100"
+              stroke="red"
+              strokeWidth="3"
+            />
+          </svg>
+        )}
+      </Button>
     );
   };
 
-  if (roomData.isLoading) {
-    return <Loading />;
-  }
+  if (roomData.isLoading) return <CalendarSkeleton />;
 
   return (
     <>
       <div className="flex flex-col gap-4 p-2 text-gray-900">
         <div className="flex items-center justify-between gap-4">
-          <ShadcnButton
-            type="button"
-            title="Prev"
-            onClick={handlePreviousMonth}
-          />
+          <Button type="button" onClick={handlePreviousMonth}>
+            Prev
+          </Button>
           <p className="text-lg font-bold text-gray-900 sm:text-xl md:text-2xl">
             {selectedDate.format("MMMM YYYY")}
           </p>
-          <ShadcnButton type="button" title="Next" onClick={handleNextMonth} />
+          <Button type="button" onClick={handleNextMonth}>
+            Next
+          </Button>
         </div>
         <div className="overflow-x-auto">
-          <table className="w-full min-w-[640px] rounded-md border-2">
-            <thead className="border-2 text-xs sm:text-sm md:text-base [&_th]:p-1 sm:[&_th]:p-2">
-              <tr className="flex gap-0.5 p-2 sm:gap-1">
-                <th className="flex h-16 w-24 items-center justify-center gap-4 border-[1px] text-xs sm:h-20 sm:w-32 sm:text-sm md:w-40">
-                  Room details
+          <table className="w-full min-w-[640px] table-fixed rounded-md border-2">
+            <thead className="border-2 text-[8px] sm:text-xs md:text-sm [&_th]:p-0.5 sm:[&_th]:p-1">
+              <tr className="flex">
+                <th className="flex h-12 w-20 shrink-0 items-center justify-center border-[1px] sm:h-16 sm:w-24 md:h-20 md:w-32">
+                  Rooms
                 </th>
                 {currentMonth.map((date, index) => (
                   <th
                     key={index}
-                    className="flex h-16 w-8 flex-col items-center justify-center border-[1px] text-xs sm:h-20 sm:w-10 sm:text-sm md:w-12"
+                    className="flex h-12 w-6 shrink-0 flex-col items-center justify-center border-[1px] sm:h-16 sm:w-8 md:h-20 md:w-[2.75rem]"
                   >
                     <span>{weekdayNames[date.day()]} </span>
                     <span>{date.date()} </span>
@@ -216,15 +210,12 @@ export const BookingCalendar = () => {
             </thead>
             <tbody>
               {roomData.data?.map((room) => (
-                <tr
-                  key={room.roomId}
-                  className="flex gap-0.5 border-[1px] p-2 sm:gap-1"
-                >
-                  <td className="flex h-16 w-24 flex-col items-center justify-center gap-0.5 border-r-[1px] p-1 sm:h-20 sm:w-32 sm:p-2 md:w-40">
-                    <span className="text-center text-[10px] sm:text-xs">
+                <tr key={room.roomId} className="flex">
+                  <td className="flex h-12 w-20 shrink-0 flex-col items-center justify-center border-[1px] p-0.5 sm:h-16 sm:w-24 sm:p-1 md:h-20 md:w-32">
+                    <span className="text-center text-[8px] sm:text-[10px] md:text-xs">
                       {room.roomName}
                     </span>
-                    <span className="text-center text-[8px] sm:text-[10px]">
+                    <span className="text-center text-[6px] sm:text-[8px] md:text-[10px]">
                       {room.hotel.hotelName}
                     </span>
                   </td>
@@ -233,7 +224,7 @@ export const BookingCalendar = () => {
                       date={date}
                       roomId={room.roomId}
                       key={index}
-                      className="h-16 w-8 sm:h-20 sm:w-10 md:w-12"
+                      className="h-12 w-6 shrink-0 sm:h-16 sm:w-8 md:h-20 md:w-[2.75rem]"
                     />
                   ))}
                 </tr>

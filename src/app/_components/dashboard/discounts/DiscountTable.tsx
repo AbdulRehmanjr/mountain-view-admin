@@ -30,6 +30,7 @@ import {
 import { api } from "~/trpc/react";
 import { TableSkeleton } from "~/app/_components/dashboard/skeletons/TableSkeletion";
 import dayjs from "dayjs";
+import { DeleteDiscountPopups } from "~/app/_components/dashboard/discounts/DeleteDiscount";
 
 export const columns: ColumnDef<DiscountProps>[] = [
   {
@@ -149,7 +150,7 @@ export const DiscountTable = () => {
         <TableSkeleton
           headers={[
             "Title",
-            "Discoutn %",
+            "Discount %",
             "Redeem Code",
             "Start Date",
             "End Date",
@@ -189,6 +190,11 @@ export const DiscountTable = () => {
             <RefreshCw className="mr-2 h-4 w-4" />
             Refresh
           </Button>
+          <DeleteDiscountPopups
+            discountIds={table
+              .getSelectedRowModel()
+              .flatRows.map((row) => row.original.discountId)}
+          />
         </div>
       </div>
       <div className="rounded-md border">

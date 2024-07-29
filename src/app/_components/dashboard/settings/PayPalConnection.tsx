@@ -1,33 +1,40 @@
 'use client'
 
 import { useRouter } from "next/navigation"
-import { useState } from "react"
 import { Button } from "~/components/ui/button"
 import { Card, CardDescription, CardFooter, CardHeader, CardTitle } from "~/components/ui/card"
+import { useToast } from "~/components/ui/use-toast"
 import { api } from "~/trpc/react"
 
 export const PayPalConnection = () => {
 
-    const [isConnect,] = useState<boolean>(false)
+    const toast = useToast()
     const router = useRouter()
+
+    const isConnected = api.paypal.paypalConnection.useQuery()
     const paypalconnection = api.paypal.connectToPayPal.useMutation({
         onSuccess: (data: string) => {
             router.push(data)
         },
         onError: (_data) => {
-            alert("error")
+            toast.toast({
+                variant:'destructive',
+                title:"Error",
+                description:'Something went wrong.'
+            })
         }
     })
+
     return (
-        <Card>
-            <CardHeader>
+        <Card className="w-full">
+            <CardHeader className="text-primary">
                 <CardTitle>Account OnBoarding</CardTitle>
                 <CardDescription>Connect your account to paypal.</CardDescription>
             </CardHeader>
             <CardFooter >
-                <Button type="button" title="paypal-connection" onClick={() => paypalconnection.mutate()}
-                    disabled={isConnect || paypalconnection.isLoading}>
-                    {isConnect ? "Connected" : "Connect to PayPal"}
+                <Button type="button"  onClick={() => paypalconnection.mutate()}
+                    disabled={(isConnected.data ?? true) || paypalconnection.isLoading}>
+                    {isConnected.data ? "Connected" : "Connect to PayPal"}
                 </Button>
             </CardFooter>
         </Card>

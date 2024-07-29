@@ -23,6 +23,7 @@ import {
   PopoverContent,
 } from "~/components/ui/popover";
 import { cn } from "~/lib/utils";
+import dayjs from "dayjs";
 
 const formSchema = z.object({
   title: z
@@ -51,8 +52,8 @@ export const CreateDiscountForm = () => {
     createDiscount.mutate({
       title: values.title,
       discount: values.discount,
-      startDate: values.startDate.toISOString().split("T")[0] ?? "none",
-      endDate: values.endDate.toISOString().split("T")[0] ?? "none",
+      startDate: dayjs(values.startDate).format('YYYY-MM-DD') ?? "none",
+      endDate: dayjs(values.endDate).format('YYYY-MM-DD') ?? "none",
     });
   };
 

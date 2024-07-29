@@ -4,6 +4,8 @@ import { z } from "zod";
 import { GaxiosError } from "gaxios";
 import { TRPCClientError } from "@trpc/client";
 import { calendar } from "~/server/config/calendar";
+import { TRPCError } from "@trpc/server";
+import { AxiosError } from "axios";
 
 
 
@@ -20,6 +22,7 @@ export const CalendarRouter = createTRPCRouter({
             throw new Error("Something went wrong")
         }
     }),
+
     getUserInfo: publicProcedure
         .input(z.object({ token: z.string() }))
         .query(async ({ ctx, input }): Promise<GoogleTokenProp | null> => {
@@ -50,6 +53,41 @@ export const CalendarRouter = createTRPCRouter({
                 throw new Error("Something went wrong")
             }
         }),
+
+    calendarConnection: protectedProcedure
+        .query(async ({ ctx }) => {
+            try {
+
+                const response = await ctx.db.googleToken.findFirst({
+                    where: { email: ctx.session.user.email ?? 'none' }
+                })
+
+                if (response) return true
+                return false
+            } catch (error) {
+                if (error instanceof TRPCClientError) {
+                    console.log(error.message)
+                    throw new TRPCError({
+                        code: 'NOT_FOUND',
+                        message: error.message
+                    })
+                }
+                else if (error instanceof AxiosError) {
+                    console.log(error.response?.data)
+                    throw new TRPCError({
+                        code: 'BAD_REQUEST',
+                        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+                        message: error.response?.data
+                    })
+                }
+                console.log(error)
+                throw new TRPCError({
+                    code: 'BAD_REQUEST',
+                    message: 'Something went wrong.'
+                })
+            }
+        }),
+
     getEvents: protectedProcedure.query(async ({ ctx }) => {
         try {
 

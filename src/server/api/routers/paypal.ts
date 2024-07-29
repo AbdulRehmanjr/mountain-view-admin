@@ -9,110 +9,147 @@ import axios, { AxiosError } from "axios";
 import { env } from "~/env";
 import { z } from "zod";
 import { getServerAuthSession } from "~/server/auth";
+import { TRPCError } from "@trpc/server";
 
 
 export const PayPalRouter = createTRPCRouter({
 
     getAuthToken: publicProcedure.query(async () => {
-            const username = env.PAYPAL_CLIENT
-            const password = env.PAYPAL_SECERT
-            const base64Credentials = Buffer.from(`${username}:${password}`).toString('base64');
-            try {
-                const config = {
-                    headers: {
-                        'Accept': 'application/json',
-                        'Accept-Language': 'en_US',
-                        'Authorization': `Basic ${base64Credentials}`,
-                        'Content-Type': 'application/x-www-form-urlencoded',
-                    },
-                };
-                const data = 'grant_type=client_credentials';
-                const response = await axios.post(`${process.env.PAYPAL_API}/v1/oauth2/token`, data, config)
-                const access_token = response.data.access_token;
-                return access_token;
-            } catch (error) {
-                if (error instanceof AxiosError)
-                    console.log(error.response?.data)
-                throw error
-            }
+        const username = env.PAYPAL_CLIENT
+        const password = env.PAYPAL_SECERT
+        const base64Credentials = Buffer.from(`${username}:${password}`).toString('base64');
+        try {
+            const config = {
+                headers: {
+                    'Accept': 'application/json',
+                    'Accept-Language': 'en_US',
+                    'Authorization': `Basic ${base64Credentials}`,
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+            };
+            const data = 'grant_type=client_credentials';
+            const response = await axios.post(`${process.env.PAYPAL_API}/v1/oauth2/token`, data, config)
+            const access_token = response.data.access_token;
+            return access_token;
+        } catch (error) {
+            if (error instanceof AxiosError)
+                console.log(error.response?.data)
+            throw error
         }
-        ),
-    connectToPayPal:protectedProcedure
-            .mutation(async ({ ctx }): Promise<string> => {
-                const id: string = randomUUID().toString()
-                const BN_CODE = process.env.BN_CODE
-                try {
-                    const data = {
-                        "tracking_id": id,
-                        "operations": [
-                            {
-                                "operation": "API_INTEGRATION",
-                                "api_integration_preference": {
-                                    "rest_api_integration": {
-                                        "integration_method": "PAYPAL",
-                                        "integration_type": "THIRD_PARTY",
-                                        "third_party_details": {
-                                            "features": ["PAYMENT", "REFUND", "PARTNER_FEE", "ACCESS_MERCHANT_INFORMATION"]
-                                        }
+    }
+    ),
+
+    paypalConnection: protectedProcedure
+        .query(async ({ ctx }) => {
+            try {
+
+                const response = await ctx.db.sellerPayPal.findUnique({
+                    where: { email: ctx.session.user.email ?? 'none' }
+                })
+
+                if (response) return true
+                return false
+            } catch (error) {
+                if (error instanceof TRPCClientError) {
+                    console.log(error.message)
+                    throw new TRPCError({
+                        code: 'NOT_FOUND',
+                        message: error.message
+                    })
+                }
+                else if (error instanceof AxiosError) {
+                    console.log(error.response?.data)
+                    throw new TRPCError({
+                        code: 'BAD_REQUEST',
+                        message: error.response?.data
+                    })
+                }
+                console.log(error)
+                throw new TRPCError({
+                    code: 'BAD_REQUEST',
+                    message: 'Something went wrong.'
+                })
+            }
+        }),
+
+    connectToPayPal: protectedProcedure
+        .mutation(async ({ ctx }): Promise<string> => {
+            const id: string = randomUUID().toString()
+            const BN_CODE = process.env.BN_CODE
+            try {
+                const data = {
+                    "tracking_id": id,
+                    "operations": [
+                        {
+                            "operation": "API_INTEGRATION",
+                            "api_integration_preference": {
+                                "rest_api_integration": {
+                                    "integration_method": "PAYPAL",
+                                    "integration_type": "THIRD_PARTY",
+                                    "third_party_details": {
+                                        "features": ["PAYMENT", "REFUND", "PARTNER_FEE", "ACCESS_MERCHANT_INFORMATION"]
                                     }
                                 }
                             }
-                        ],
-                        "products": ["EXPRESS_CHECKOUT"],
-                        "legal_consents": [
-                            {
-                                "type": "SHARE_DATA_CONSENT",
-                                "granted": true
-                            }
-                        ],
-                        "partner_config_override": {
-                            "return_url": "https://pam-hotel-admin.vercel.app/dashboard/success",
                         }
-                    };
+                    ],
+                    "products": ["EXPRESS_CHECKOUT"],
+                    "legal_consents": [
+                        {
+                            "type": "SHARE_DATA_CONSENT",
+                            "granted": true
+                        }
+                    ],
+                    "partner_config_override": {
+                        "return_url": "https://pam-hotel-admin.vercel.app/dashboard/success",
+                    }
+                };
 
-                    const paypalApiUrl = `${process.env.PAYPAL_API}/v2/customer/partner-referrals`;
+                const paypalApiUrl = `${process.env.PAYPAL_API}/v2/customer/partner-referrals`;
 
-                    const headers = {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${ctx.session?.user.paypal_token}`,
-                        'Paypal-Partner-Attribution-Id': BN_CODE
-                    };
-                    const response = await axios.post(paypalApiUrl, data, { headers })
-                    const url: string = response.data.links?.find((link: { rel: string; }) => link?.rel === 'action_url').href
-                    return url
-                } catch (error) {
+                const headers = {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${ctx.session?.user.paypal_token}`,
+                    'Paypal-Partner-Attribution-Id': BN_CODE
+                };
+                const response = await axios.post(paypalApiUrl, data, { headers })
+                const url: string = response.data.links?.find((link: { rel: string; }) => link?.rel === 'action_url').href
+                return url
+            } catch (error) {
 
-                    if (error instanceof TRPCClientError)
-                        console.log(error.message)
-                    else if (error instanceof AxiosError)
-                        console.log(error.response?.data)
-                    throw error
-                }
-            }),
-    createSellerInfo:protectedProcedure
-            .input(z.object({ trackingId: z.string(), merchantId: z.string(), }))
-            .mutation(async ({ ctx, input }) => {
+                if (error instanceof TRPCClientError)
+                    console.log(error.message)
+                else if (error instanceof AxiosError)
+                    console.log(error.response?.data)
+                throw error
+            }
+        }),
 
-                try {
-                    const session = await getServerAuthSession()
-                    const email = session?.user.email
-                    if (!email) throw new TRPCClientError("Session not found")
-                    await ctx.db.sellerPayPal.create({
-                        data: {
-                            trackingId: input.trackingId,
-                            email: email,
-                            merchantId: "",
-                            partner_client_id: ""
-                        },
-                    })
-                } catch (error) {
-                    if (error instanceof AxiosError)
-                        console.log(error.response?.data)
-                    else if (error instanceof TRPCClientError)
-                        console.error(error.message)
-                    throw error
-                }
-            }),
+    createSellerInfo: protectedProcedure
+        .input(z.object({ trackingId: z.string(), merchantId: z.string(), }))
+        .mutation(async ({ ctx, input }) => {
+
+            try {
+                const session = await getServerAuthSession()
+                const email = session?.user.email
+                if (!email) throw new TRPCClientError("Session not found")
+                await ctx.db.sellerPayPal.create({
+                    data: {
+                        trackingId: input.trackingId,
+                        email: email,
+                        merchantId: "none",
+                        partner_client_id: "none"
+                    },
+                })
+            } catch (error) {
+                if (error instanceof AxiosError)
+                    console.log(error.response?.data)
+                else if (error instanceof TRPCClientError)
+                    console.error(error.message)
+                throw error
+            }
+        }),
+
     onBoardingStatus:
         protectedProcedure
             .input(z.object({ merchantId: z.string() }))

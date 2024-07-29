@@ -144,6 +144,7 @@ export const RoomRouter = createTRPCRouter({
                 throw new Error("Error")
             }
         }),
+        
     deleteRoomsByIds: protectedProcedure.input(z.object({ roomIds: z.string().array() }))
         .mutation(async ({ ctx, input }) => {
             try {

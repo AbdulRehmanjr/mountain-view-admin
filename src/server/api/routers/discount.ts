@@ -5,6 +5,7 @@ import { z } from "zod";
 import { createTRPCRouter, protectedProcedure } from "../trpc";
 import { TRPCClientError } from "@trpc/client";
 import { redeemCode } from "~/utils";
+import { TRPCError } from "@trpc/server";
 
 
 
@@ -77,6 +78,26 @@ export const DiscountRouter = createTRPCRouter({
                 }
                 console.error(error)
                 throw new Error("Something went wrong")
+            }
+        }),
+
+    deleteDiscountByIds: protectedProcedure.input(z.object({ discountIds: z.string().array() }))
+        .mutation(async ({ ctx, input }) => {
+            try {
+                await ctx.db.discounts.deleteMany({ where: { discountId: { in: input.discountIds } } })
+            } catch (error) {
+                if (error instanceof TRPCClientError) {
+                    console.error(error.message)
+                    throw new TRPCError({
+                        code: 'BAD_REQUEST',
+                        message: error.message
+                    })
+                }
+                console.error(error)
+                throw new TRPCError({
+                    code: 'INTERNAL_SERVER_ERROR',
+                    message: 'Something went wrong'
+                })
             }
         }),
 })

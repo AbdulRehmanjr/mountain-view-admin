@@ -3,6 +3,8 @@ import {
   Bed,
   Bell,
   Building,
+  Calendar,
+  Euro,
   Home,
   Package2,
   Settings,
@@ -24,6 +26,8 @@ export const SideBar = () => {
     { href: "/dashboard/hotels", icon: Building, label: "Hotels" },
     { href: "/dashboard/rooms", icon: Bed, label: "Rooms" },
     { href: "/dashboard/discounts", icon: Ticket, label: "Discounts" },
+    { href: "/dashboard/prices", icon: Euro, label: "Prices" },
+    { href: "/dashboard/calendar", icon: Calendar, label: "Calendar" },
     { href: "/dashboard/settings", icon: Settings, label: "Settings" },
   ];
 

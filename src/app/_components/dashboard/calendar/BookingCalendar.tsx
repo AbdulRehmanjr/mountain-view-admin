@@ -1,4 +1,5 @@
 "use client";
+
 import { useMemo, useState } from "react";
 import dayjs, { type Dayjs } from "dayjs";
 import { api } from "~/trpc/react";
@@ -8,9 +9,11 @@ import { Button } from "~/components/ui/button";
 import { useHotelAdmin } from "~/utils/store";
 import { BlockDates } from "~/app/_components/dashboard/calendar/BlockDates";
 import { CalendarSkeleton } from "~/app/_components/dashboard/skeletons/CalendarSkeleton";
+
 dayjs.extend(isBetween);
 
 export const BookingCalendar = () => {
+  
   const { blockDate, setBlockDate, setBlockDialog } = useHotelAdmin();
   const [selectedDate, setSelectedDate] = useState<Dayjs>(dayjs());
   const weekdayNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
@@ -102,8 +105,8 @@ export const BookingCalendar = () => {
     className?: string;
   }) => {
     const isSelected = isInRange(date, roomId);
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
     const isBooked = isDateBooked(date, bookings.data ?? [], roomId);
-
     const isBlocked = isDateBlocked(date, roomId);
 
     return (
@@ -120,32 +123,7 @@ export const BookingCalendar = () => {
         disabled={isBooked}
       >
         {date.date()}
-        {isBooked && (
-          <svg
-            className="pointer-events-none absolute inset-0 h-full w-full"
-            xmlns="http://www.w3.org/2000/svg"
-            viewBox="0 0 100 100"
-            preserveAspectRatio="none"
-          >
-            <line
-              x1="0"
-              y1="0"
-              x2="100"
-              y2="100"
-              stroke="red"
-              strokeWidth="3"
-            />
-            <line
-              x1="100"
-              y1="0"
-              x2="0"
-              y2="100"
-              stroke="red"
-              strokeWidth="3"
-            />
-          </svg>
-        )}
-        {isBlocked && (
+        {(isBooked || isBlocked) && (
           <svg
             className="pointer-events-none absolute inset-0 h-full w-full"
             xmlns="http://www.w3.org/2000/svg"
@@ -178,7 +156,7 @@ export const BookingCalendar = () => {
 
   return (
     <>
-      <div className="flex flex-col gap-4 p-2 text-gray-900">
+      <div className="flex h-full w-full flex-col gap-4 p-2 text-gray-900">
         <div className="flex items-center justify-between gap-4">
           <Button type="button" onClick={handlePreviousMonth}>
             Prev
@@ -190,11 +168,11 @@ export const BookingCalendar = () => {
             Next
           </Button>
         </div>
-        <div className="overflow-x-auto">
-          <table className="w-full min-w-[640px] table-fixed rounded-md border-2">
-            <thead className="border-2 text-[8px] sm:text-xs md:text-sm [&_th]:p-0.5 sm:[&_th]:p-1">
+        <div className="relative flex-grow overflow-auto">
+          <table className="w-full table-fixed border-collapse">
+            <thead className="sticky top-0 z-20 bg-white text-[8px] sm:text-xs md:text-sm">
               <tr className="flex">
-                <th className="flex h-12 w-20 shrink-0 items-center justify-center border-[1px] sm:h-16 sm:w-24 md:h-20 md:w-32">
+                <th className="sticky left-0 z-30 flex h-12 w-20 shrink-0 items-center justify-center border-[1px] bg-white sm:h-16 sm:w-24 md:h-20 md:w-32">
                   Rooms
                 </th>
                 {currentMonth.map((date, index) => (
@@ -202,8 +180,8 @@ export const BookingCalendar = () => {
                     key={index}
                     className="flex h-12 w-6 shrink-0 flex-col items-center justify-center border-[1px] sm:h-16 sm:w-8 md:h-20 md:w-[2.75rem]"
                   >
-                    <span>{weekdayNames[date.day()]} </span>
-                    <span>{date.date()} </span>
+                    <span>{weekdayNames[date.day()]}</span>
+                    <span>{date.date()}</span>
                   </th>
                 ))}
               </tr>
@@ -211,7 +189,7 @@ export const BookingCalendar = () => {
             <tbody>
               {roomData.data?.map((room) => (
                 <tr key={room.roomId} className="flex">
-                  <td className="flex h-12 w-20 shrink-0 flex-col items-center justify-center border-[1px] p-0.5 sm:h-16 sm:w-24 sm:p-1 md:h-20 md:w-32">
+                  <td className="sticky left-0 z-10 flex h-12 w-20 shrink-0 flex-col items-center justify-center border-[1px] bg-white p-0.5 sm:h-16 sm:w-24 sm:p-1 md:h-20 md:w-32">
                     <span className="text-center text-[8px] sm:text-[10px] md:text-xs">
                       {room.roomName}
                     </span>

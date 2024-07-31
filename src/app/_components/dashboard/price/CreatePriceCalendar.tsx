@@ -1,6 +1,6 @@
-"use client";
+'use client'
 
-import { useCallback, useMemo, useState } from "react";
+import React, { useCallback, useMemo, useState } from "react";
 import dayjs, { type Dayjs } from "dayjs";
 import { api } from "~/trpc/react";
 import isBetween from "dayjs/plugin/isBetween";
@@ -101,7 +101,7 @@ export const CreatePriceCalendar = () => {
   if (roomData.isLoading) return <CalendarSkeleton />;
 
   return (
-    <div className="flex flex-col gap-4 p-2 text-gray-900">
+    <div className="flex h-full w-full flex-col gap-4 p-2 text-gray-900">
       <div className="flex items-center justify-between gap-4">
         <Button type="button" onClick={handlePreviousMonth}>
           Prev
@@ -113,11 +113,11 @@ export const CreatePriceCalendar = () => {
           Next
         </Button>
       </div>
-      <div className="overflow-x-auto">
-        <table className="w-full min-w-[640px] table-fixed rounded-md border-2">
-          <thead className="border-2 text-[8px] sm:text-xs md:text-sm [&_th]:p-0.5 sm:[&_th]:p-1">
+      <div className="relative flex-grow overflow-auto">
+        <table className="w-full table-fixed border-collapse">
+          <thead className="sticky top-0 z-20 bg-white text-[8px] sm:text-xs md:text-sm">
             <tr className="flex">
-              <th className="flex h-12 w-20 shrink-0 items-center justify-center border-[1px] sm:h-16 sm:w-24 md:h-20 md:w-32">
+              <th className="sticky left-0 z-30 flex h-12 w-20 shrink-0 items-center justify-center border-[1px] bg-white sm:h-16 sm:w-24 md:h-20 md:w-32">
                 Rooms
               </th>
               {currentMonth.map((date, index) => (
@@ -134,7 +134,7 @@ export const CreatePriceCalendar = () => {
           <tbody>
             {roomData.data?.map((room) => (
               <tr key={room.roomId} className="flex">
-                <td className="flex h-12 w-20 shrink-0 flex-col items-center justify-center border-[1px] p-0.5 sm:h-16 sm:w-24 sm:p-1 md:h-20 md:w-32">
+                <td className="sticky left-0 z-10 flex h-12 w-20 shrink-0 flex-col items-center justify-center border-[1px] bg-white p-0.5 sm:h-16 sm:w-24 sm:p-1 md:h-20 md:w-32">
                   <span className="text-center text-[8px] sm:text-[10px] md:text-xs">
                     {room.roomName}
                   </span>

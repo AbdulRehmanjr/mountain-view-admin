@@ -1,5 +1,6 @@
-import { BookingForm } from "~/app/_components/dashboard/booking/CreateBooking";
-import {  Breadcrumb,BreadcrumbItem,  BreadcrumbLink,  BreadcrumbList,} from "~/components/ui/breadcrumb";
+
+import {  Breadcrumb,BreadcrumbItem,  BreadcrumbList, BreadcrumbPage,} from "~/components/ui/breadcrumb";
+import { Charts } from "~/app/_components/dashboard/landings/Charts";
 
 export default function DashboardPage() {
   return (
@@ -8,16 +9,13 @@ export default function DashboardPage() {
         <Breadcrumb>
           <BreadcrumbList className="text-primary">
             <BreadcrumbItem>
-              <BreadcrumbLink href="/dashboard">Dashboard</BreadcrumbLink>
+              <BreadcrumbPage>Dashboard</BreadcrumbPage>
             </BreadcrumbItem>
           </BreadcrumbList>
         </Breadcrumb>
-        <h1 className="text-lg font-semibold text-primary md:text-2xl">
-          Manual Booking
-        </h1>
       </div>
       <div className="flex flex-1 items-center justify-center rounded-lg border border-dashed py-10 shadow-sm">
-        <BookingForm />
+        <Charts/>
       </div>
     </>
   );

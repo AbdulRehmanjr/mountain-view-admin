@@ -6,6 +6,7 @@ import {
   Calendar,
   Euro,
   Home,
+  ListOrdered,
   Package2,
   Settings,
   Ticket,
@@ -22,12 +23,13 @@ import {
 
 export const SideBar = () => {
   const links = [
-    { href: "/dashboard", icon: Home, label: "Dashbaord" },
-    { href: "/dashboard/hotels", icon: Building, label: "Hotels" },
-    { href: "/dashboard/rooms", icon: Bed, label: "Rooms" },
-    { href: "/dashboard/discounts", icon: Ticket, label: "Discounts" },
-    { href: "/dashboard/prices", icon: Euro, label: "Prices" },
+    { href: "/dashboard", icon: Home, label: "Overview" },
+    { href: "/dashboard/bookings", icon: ListOrdered, label: "Bookings" },
     { href: "/dashboard/calendar", icon: Calendar, label: "Calendar" },
+    { href: "/dashboard/prices", icon: Euro, label: "Prices" },
+    { href: "/dashboard/discounts", icon: Ticket, label: "Discounts" },
+    { href: "/dashboard/rooms", icon: Bed, label: "Rooms" },
+    { href: "/dashboard/hotels", icon: Building, label: "Hotels" },
     { href: "/dashboard/settings", icon: Settings, label: "Settings" },
   ];
 

@@ -1,25 +1,29 @@
 /* eslint-disable @typescript-eslint/no-unsafe-argument */
 /* eslint-disable @typescript-eslint/no-explicit-any */
-
-import { randomBytes, randomInt } from "crypto";
+import { randomBytes } from "crypto";
 import { type Dayjs } from "dayjs";
 
-export const convertToBase64 = async (data: any): Promise<string> => {
-    const fileBase64: string = await new Promise<string>((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onload = () => resolve(reader.result as string);
-        reader.onerror = reject;
-        reader.readAsDataURL(data)
-    })
-    return fileBase64
+
+export const encodeToBase64 = (username: string, password: string): string => {
+    return Buffer.from(`${username}:${password}`).toString('base64');
+}
+
+export const encodeToUtf8 = (base64: string) => {
+    const decodedBuffer = Buffer.from(base64, 'base64');
+    return decodedBuffer.toString('utf8');
 }
 
 export const randomCode = (length: number, prefix: string) => {
-    let generatedString: string = prefix
-    for (let i = 0; i < length; i++)
-        generatedString = generatedString + String(randomInt(9))
-    return generatedString
+    let generatedString = prefix;
+    const charset = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+    const randombytes = randomBytes(length)
+    for (const byte of randombytes) {
+        const randomIndex = byte % charset.length;
+        generatedString += charset[randomIndex];
+    }
+    return generatedString.slice(0, length)
 }
+
 
 
 export const redeemCode = (length: number) => {
@@ -75,7 +79,7 @@ export const extractPricesForDates = (allDates: string[], prices: { date: string
         allDates.forEach(date => {
             const priceObj = prices.find(p => p.date === date)
             if (priceObj) {
-                totalPrice += totalPeople > 3 ? priceObj.price + (priceObj.price * (priceObj.Inc/100)) :priceObj.price  
+                totalPrice += totalPeople > 3 ? priceObj.price + (priceObj.price * (priceObj.Inc / 100)) : priceObj.price
             }
         })
     }

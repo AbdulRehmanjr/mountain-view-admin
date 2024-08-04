@@ -1,9 +1,8 @@
-import { getAuthAssertionValue } from "~/utils";
 import { createTRPCRouter, protectedProcedure, publicProcedure } from "../trpc";
 import { TRPCClientError } from "@trpc/client";
+import { TRPCError } from "@trpc/server";
 import { AxiosError } from "axios";
 import { z } from "zod";
-import { env } from "~/env";
 
 
 
@@ -15,37 +14,91 @@ export const BookingRouter = createTRPCRouter({
                 select: {
                     roomRoomId: true,
                     type: true,
-                    startDate:true,
-                    endDate:true
+                    startDate: true,
+                    endDate: true
                 }
             })
             return bookings
         } catch (error) {
             if (error instanceof TRPCClientError) {
                 console.error(error.message)
-                throw new Error(error.message)
+                throw new TRPCError({
+                    code: 'BAD_REQUEST',
+                    message: error.message
+                })
             }
             console.error(error)
-            throw new Error("Something went wrong")
+            throw new TRPCError({
+                code: 'NOT_FOUND',
+                message: "Something went wrong"
+            })
         }
     }),
 
-    getAllBookingsDetail: protectedProcedure.query(async ({ ctx }) => {
+    getAllBookingsWithDetail: protectedProcedure.query(async ({ ctx }) => {
         try {
-            const bookings = await ctx.db.roomBooking.findMany({
-                include: {
-                    Room: true,
-                    bookingDetails: true
+            const bookings: BookingDetailProps[] = await ctx.db.roomBooking.findMany({
+                select: {
+                    bookingId: true,
+                    startDate: true,
+                    endDate: true,
+                    price: true,
+                    isRefund: true,
+                    payPalInfoId: true,
+                    roomRoomId: true,
+                    bookingDetailId: true,
+                    bookingDetails: {
+                        select: {
+                            bookingDetailId: true,
+                            adults: true,
+                            children: true,
+                            kids: true,
+                            city: true,
+                            country: true,
+                            phone: true,
+                            postalCode: true,
+                            address: true,
+                            fullName: true,
+                            surName: true,
+                            email: true,
+                            arrivalTime: true
+                        }
+                    },
+                    Room: {
+                        select: {
+                            roomId: true,
+                            roomName: true,
+                            hotelHotelId: true,
+                            roomType: true,
+                            hotel: {
+                                select: {
+                                    hotelName: true
+                                }
+                            }
+                        }
+                    },
+                    PayPalBoookingInfo: {
+                        select: {
+                            paypalBoookingId: true,
+                            paymentId: true
+                        }
+                    }
                 }
-            })
+            });
             return bookings
         } catch (error) {
             if (error instanceof TRPCClientError) {
                 console.error(error.message)
-                throw new Error(error.message)
+                throw new TRPCError({
+                    code: 'BAD_REQUEST',
+                    message: error.message
+                })
             }
             console.error(error)
-            throw new Error("Something went wrong")
+            throw new TRPCError({
+                code: 'NOT_FOUND',
+                message: "Something went wrong"
+            })
         }
     }),
 
@@ -85,7 +138,7 @@ export const BookingRouter = createTRPCRouter({
                         city: input.city,
                         arrivalTime: input.arrivalTime,
                         postalCode: input.postalCode,
-                        streetName: input.streetName,
+                        address: input.streetName,
                     }
                 })
                 const booking = await ctx.db.roomBooking.create({
@@ -104,59 +157,61 @@ export const BookingRouter = createTRPCRouter({
             } catch (error) {
                 if (error instanceof TRPCClientError) {
                     console.error(error.message)
-                    throw new Error(error.message)
+                    throw new TRPCError({
+                        code: 'BAD_REQUEST',
+                        message: error.message
+                    })
                 }
                 console.error(error)
-                throw new Error("Error")
-            }
-        }),
-
-    makeRefund: protectedProcedure.input(z.object({ captureId: z.string(), paymentId: z.string() }))
-        .mutation(async ({ ctx, input }) => {
-
-            try {
-                const BN_CODE = env.BN_CODE
-                const clientId = env.PAYPAL_CLIENT
-
-                const sellerInfo = await ctx.db.sellerPayPal.findUnique({
-                    where: {
-                        email: 'abdulrehman2020white@gmail.com'
-                    }
+                throw new TRPCError({
+                    code: 'NOT_FOUND',
+                    message: "Something went wrong"
                 })
-
-                if (!sellerInfo) throw new TRPCClientError("Seller not found")
-                const authAssertion = getAuthAssertionValue(clientId, sellerInfo.merchantId);
-                const paypalApiUrl = `${env.PAYPAL_API}/v2/payments/captures/${input.paymentId}/refund`;
-                const headers = {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${ctx.session?.user.paypal_token}`,
-                    'PayPal-Auth-Assertion': authAssertion,
-                    'Paypal-Partner-Attribution-Id': BN_CODE
-                };
-                // axios.post(paypalApiUrl, {}, { headers })
-                //     .then(async (_response: AxiosResponse) => {
-                //         await ctx.db.payPalBoookingInfo.update({
-                //             where: {
-                //                 captureId: input.captureId
-                //             },
-                //             data: {
-                //                 : true
-                //             }
-                //         })
-                //     })
-                //     .catch((error: AxiosError) => console.log(error.response?.data))
-            } catch (error) {
-                if (error instanceof TRPCClientError) {
-                    console.error(error.message)
-                    throw new Error(error.message)
-                }
-                else if (error instanceof AxiosError) {
-                    console.log(error.message)
-                    throw new Error(error.message)
-                }
             }
-
         }),
 
+    generatePdf: publicProcedure.mutation(async () => {
+        try {
+
+            const response = await fetch('http://localhost:3000/api/upload', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to generate PDF');
+            }
+
+            const blob = await response.blob();
+            return URL.createObjectURL(blob);
+        } catch (error) {
+            if (error instanceof TRPCClientError) {
+                console.error(error.message)
+                throw new TRPCError({
+                    code: 'BAD_REQUEST',
+                    message: error.message
+                })
+            } else if (error instanceof AxiosError) {
+                console.error(error.response?.data)
+                throw new TRPCError({
+                    code: 'BAD_REQUEST',
+                    message: error.message
+                })
+            } else if (error instanceof TRPCError) {
+                console.error(error.message)
+                throw new TRPCError({
+                    code: 'NOT_FOUND',
+                    message: error.message
+                })
+            }
+            console.error(error)
+            throw new TRPCError({
+                code: 'NOT_FOUND',
+                message: "Something went wrong"
+            })
+        }
+    })
 
 })

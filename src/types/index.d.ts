@@ -1,4 +1,3 @@
-
 type RoomProps = {
     roomId: string
     roomName: string
@@ -7,7 +6,7 @@ type RoomProps = {
     beds: number
     features: string[]
     pictures: string[]
-    quantity:number
+    quantity: number
     dp: string
     hotelHotelId: string
     description: string
@@ -22,7 +21,7 @@ type RoomDetailProps = {
     features: string[]
     pictures: string[]
     dp: string
-    quantity:number
+    quantity: number
     hotelHotelId: string
     description: string
     roomType: string
@@ -43,7 +42,7 @@ type PriceProps = {
     endDate: string
     price: number
     roomType: string
-    roomId:string
+    roomId: string
     percentInc: number
 }
 
@@ -72,7 +71,7 @@ type BookingInfoProps = {
     country: string
     phone: string
     postalCode: string
-    streetName: string
+    address: string
     fullName: string
     surName: string
     email: string
@@ -83,13 +82,9 @@ type BookingDetailProps = {
     bookingId: string
     startDate: string
     endDate: string
-    price: string
-    status: boolean
+    price: number
     isRefund: boolean
-    paymentEmail: string
-    captureId: string
-    payerId: string
-    paymentId: string
+    payPalInfoId: string
     roomRoomId: string
     bookingDetailId: string
     bookingDetails: {
@@ -101,7 +96,7 @@ type BookingDetailProps = {
         country: string
         phone: string
         postalCode: string
-        streetName: string
+        address: string
         fullName: string
         surName: string
         email: string
@@ -110,28 +105,36 @@ type BookingDetailProps = {
     Room: {
         roomId: string
         roomName: string
-        capacity: number
-        area: number
-        bed: number
-        features: string[]
-        pictures: string[]
-        dp: string
         hotelHotelId: string
-        description: string
-        price: string
-
         roomType: string
+        hotel: {
+            hotelName: string
+        }
+    }
+    PayPalBoookingInfo: {
+        paypalBoookingId: string
+        paymentId: string
     }
 }
 
 type HotelProps = {
     hotelId: string
     hotelName: string
-    location: string
-    manager: string
+    type: number
+    island: string
+    address: string
+    longitude: number
+    latitude: number
+    description: string
+    firstName: string
+    lastName: string
+    email: string
+    phone: string
+    checkIn: string
+    checkOut: string
+    code: string
     createdAt: Date
     sellerInfoSellerId: string
-    island: string
 }
 
 type StatusProps = {
@@ -188,9 +191,9 @@ type DiscountProps = {
     discountId: string
     discount: number
     title: string
-    startDate:string,
-    endDate:string,
-    createdAt:Date
+    startDate: string,
+    endDate: string,
+    createdAt: Date
     redeemCode: string
 }
 

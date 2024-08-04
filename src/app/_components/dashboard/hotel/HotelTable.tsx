@@ -13,7 +13,7 @@ import {
   getSortedRowModel,
   useReactTable,
 } from "@tanstack/react-table";
-import {RefreshCw, SearchIcon } from "lucide-react";
+import { PencilIcon, Plus, RefreshCw, SearchIcon } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Button } from "~/components/ui/button";
 import { Checkbox } from "~/components/ui/checkbox";
@@ -26,10 +26,10 @@ import {
   TableHeader,
   TableRow,
 } from "~/components/ui/table";
-import { CreateHotelDialog } from "~/app/_components/dashboard/hotel/CreateHotelDialog";
 import { DeleteHotelDialog } from "~/app/_components/dashboard/hotel/DeleteHotelDialog";
-import { EditHotelDialog } from "~/app/_components/dashboard/hotel/EditHotelDialog";
 import { TableSkeleton } from "~/app/_components/dashboard/skeletons/TableSkeletion";
+import Link from "next/link";
+import dayjs from "dayjs";
 
 const columns: ColumnDef<HotelProps>[] = [
   {
@@ -57,37 +57,40 @@ const columns: ColumnDef<HotelProps>[] = [
     enableHiding: false,
   },
   {
+    accessorKey: "code",
+    header: "Hotel code",
+    cell: ({ row }) => <div>{row.getValue("code")}</div>,
+  },
+  {
     accessorKey: "hotelName",
     header: "Hotel Name",
     cell: ({ row }) => <div>{row.getValue("hotelName")}</div>,
   },
   {
-    accessorKey: "manager",
+    accessorKey: "firstName",
     header: "Manager",
-    cell: ({ row }) => <div>{row.getValue("manager")}</div>,
+    cell: ({ row }) => <div>{row.getValue("firstName")}</div>,
   },
   {
-    accessorKey: "location",
-    header: "Location",
+    accessorKey: "address",
+    header: "Address",
     cell: ({ row }) => {
-      return <div className="font-medium">{row.getValue("location")}</div>;
+      return <div>{row.getValue("address")}</div>;
     },
   },
   {
     accessorKey: "island",
     header: "Island",
     cell: ({ row }) => {
-      return <div className="font-medium">{row.getValue("island")}</div>;
+      return <div>{row.getValue("island")}</div>;
     },
   },
   {
     accessorKey: "createdAt",
     header: "Creation time",
     cell: ({ row }) => {
-      const date = new Date(row.getValue("createdAt"))
-        .toISOString()
-        .split("T")[0];
-      return <div className="font-medium">{date}</div>;
+      const date = dayjs(row.getValue("createdAt")).format("DD-MM-YYYY");
+      return <div>{date}</div>;
     },
   },
   {
@@ -96,13 +99,19 @@ const columns: ColumnDef<HotelProps>[] = [
     enableHiding: false,
     cell: ({ row }) => {
       const hotel = row.original;
-      return <EditHotelDialog hotelId={hotel.hotelId} />;
+      return (
+        <Button variant="outline" size="sm" asChild>
+          <Link href={`/dashboard/hotels/${hotel.hotelId}`}>
+            <PencilIcon className="mr-2 h-3 w-3" />
+            Edit
+          </Link>
+        </Button>
+      );
     },
   },
 ];
 
 export const HotelTable = () => {
-  
   const hotelData = api.hotel.getAllHotelBySellerId.useQuery();
   const [data, setData] = useState<HotelProps[]>([]);
   const [sorting, setSorting] = useState<SortingState>([]);
@@ -136,7 +145,16 @@ export const HotelTable = () => {
   if (hotelData.isFetching)
     return (
       <div className="w-full">
-        <TableSkeleton headers={['Hotel Name','Manager','Location','Island','Creation time','Action']}/>
+        <TableSkeleton
+          headers={[
+            "Hotel Name",
+            "Manager",
+            "Location",
+            "Island",
+            "Creation time",
+            "Action",
+          ]}
+        />
       </div>
     );
 
@@ -157,7 +175,12 @@ export const HotelTable = () => {
           />
         </div>
         <div className="flex items-center gap-2">
-          <CreateHotelDialog />
+          <Button size="sm" asChild>
+            <Link href={"/dashboard/hotels/create"}>
+              <Plus className="mr-2 h-4 w-4" />
+              Add hotel
+            </Link>
+          </Button>
           <Button
             variant="outline"
             size="sm"

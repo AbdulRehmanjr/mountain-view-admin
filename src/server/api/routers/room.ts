@@ -1,6 +1,10 @@
 import { createTRPCRouter, protectedProcedure } from "../trpc";
 import z from 'zod'
 import { TRPCClientError } from "@trpc/client";
+import { randomCode } from "~/utils";
+import { env } from "~/env";
+import axios, { AxiosError } from "axios";
+import { TRPCError } from "@trpc/server";
 
 export const RoomRouter = createTRPCRouter({
 
@@ -10,6 +14,7 @@ export const RoomRouter = createTRPCRouter({
             description: z.string(),
             beds: z.number(),
             capacity: z.number(),
+            price: z.number(),
             area: z.number(),
             roomType: z.string(),
             features: z.string().array(),
@@ -19,6 +24,67 @@ export const RoomRouter = createTRPCRouter({
         }))
         .mutation(async ({ ctx, input }) => {
             try {
+
+                const hotel = await ctx.db.hotel.findUnique({ where: { hotelId: input.hotelId } })
+                if (!hotel) throw new TRPCError({
+                    code: "NOT_FOUND",
+                    message: 'Hotel not found.'
+                })
+                const roomCode = randomCode(6, 'R')
+                const headers = {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Basic ${env.API_KEY}`,
+                    'app-id': `${env.APP_ID}`
+                }
+                const roomJson = {
+                    "SellableProducts": {
+                        "hotelid": `${hotel.code}`,
+                        "SellableProduct": [
+                            {
+                                "InvStatusType": "Initial",
+                                "GuestRoom": {
+                                    "Occupancy": {
+                                        "MaxOccupancy": `${input.capacity}`,
+                                        "MaxChildOccupancy": `${input.capacity}`,
+                                    },
+                                    "Room": {
+                                        "roomid": roomCode,
+                                        "RoomRate": `${input.price}`,
+                                        "Quantity": `${input.quantity}`,
+                                        "RoomType": `${input.roomType}`,
+                                        "SizeMeasurement": `${input.capacity}`,
+                                        "SizeMeasurementUnit": "sqm"
+                                    },
+                                    "Facilities": {
+                                        "Facility": input.features.map((feature) => (
+                                            {
+                                                "Group": "Amenities",
+                                                "name": `${feature}`
+                                            }
+                                        ))
+                                    },
+                                    "Position": {
+                                        "Latitude": "49.4092",
+                                        "Longitude": "1.0900"
+                                    },
+                                    "Address": {
+                                        "AddressLine": "15 Station Street",
+                                        "CityName": "London",
+                                        "CountryName": "GB",
+                                        "PostalCode": "M16JD"
+                                    },
+                                    "Description": {
+                                        "Text": `${input.roomName}`,
+                                        "RoomDescription": `${input.description}`
+                                    }
+                                }
+                            }
+                        ]
+                    }
+                }
+
+                await axios.post(`https://connect.su-api.com/SUAPI/jservice/OTA_HotelRoom`, roomJson, { headers })
+
                 await ctx.db.room.create({
                     data: {
                         roomName: input.roomName,
@@ -26,6 +92,8 @@ export const RoomRouter = createTRPCRouter({
                         area: input.area,
                         beds: input.beds,
                         capacity: input.capacity,
+                        price: input.price,
+                        code: roomCode,
                         features: input.features,
                         pictures: input.images,
                         roomType: input.roomType,
@@ -37,9 +105,28 @@ export const RoomRouter = createTRPCRouter({
             } catch (error) {
                 if (error instanceof TRPCClientError) {
                     console.error(error.message)
-                    throw new Error(error.message)
+                    throw new TRPCError({
+                        code: 'BAD_REQUEST',
+                        message: error.message
+                    })
+                } else if (error instanceof AxiosError) {
+                    console.error(error.response?.data)
+                    throw new TRPCError({
+                        code: 'BAD_REQUEST',
+                        message: error.message
+                    })
+                } else if (error instanceof TRPCError) {
+                    console.error(error.message)
+                    throw new TRPCError({
+                        code: 'NOT_FOUND',
+                        message: error.message
+                    })
                 }
-                throw new Error("Error")
+                console.error(error)
+                throw new TRPCError({
+                    code: 'NOT_FOUND',
+                    message: "Something went wrong"
+                })
             }
         }),
     editRoom: protectedProcedure
@@ -107,11 +194,19 @@ export const RoomRouter = createTRPCRouter({
 
             try {
                 const hotels = await ctx.db.hotel.findMany({ where: { sellerInfoSellerId: ctx.session.user.sellerId } })
-                const roomsList: RoomDetailProps[] = []
+                const roomsList = []
                 for (const hotel of hotels) {
                     const rooms = await ctx.db.room.findMany({
                         where: { hotelHotelId: hotel.hotelId },
-                        include: { hotel: true }
+                        include: {
+                            hotel: {
+                                select: {
+                                    hotelId: true,
+                                    hotelName: true,
+                                    sellerInfoSellerId: true,
+                                }
+                            }
+                        }
                     })
                     if (rooms.length != 0)
                         for (const room of rooms)
@@ -121,9 +216,28 @@ export const RoomRouter = createTRPCRouter({
             } catch (error) {
                 if (error instanceof TRPCClientError) {
                     console.error(error.message)
-                    throw new Error(error.message)
+                    throw new TRPCError({
+                        code: 'BAD_REQUEST',
+                        message: error.message
+                    })
+                } else if (error instanceof AxiosError) {
+                    console.error(error.response?.data)
+                    throw new TRPCError({
+                        code: 'BAD_REQUEST',
+                        message: error.message
+                    })
+                } else if (error instanceof TRPCError) {
+                    console.error(error.message)
+                    throw new TRPCError({
+                        code: 'NOT_FOUND',
+                        message: error.message
+                    })
                 }
-                throw new Error("Error")
+                console.error(error)
+                throw new TRPCError({
+                    code: 'NOT_FOUND',
+                    message: "Something went wrong"
+                })
             }
         }),
     deleteRoomById: protectedProcedure
@@ -144,7 +258,7 @@ export const RoomRouter = createTRPCRouter({
                 throw new Error("Error")
             }
         }),
-        
+
     deleteRoomsByIds: protectedProcedure.input(z.object({ roomIds: z.string().array() }))
         .mutation(async ({ ctx, input }) => {
             try {

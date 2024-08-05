@@ -70,7 +70,30 @@ const features: FeatureProps[] = [
   { label: "Hairdryer", value: "Hairdryer" },
   { label: "Tea & coffee", value: "Tea & coffee" },
 ];
+const roomTypes = [
+  { id: 1, type: "Apartment" },
+  { id: 4, type: "Quadruple" },
+  { id: 5, type: "Suite" },
+  { id: 7, type: "Triple" },
+  { id: 8, type: "Twin" },
+  { id: 9, type: "Double" },
+  { id: 10, type: "Single" },
+  { id: 12, type: "Studio" },
+  { id: 13, type: "Family" },
+  { id: 25, type: "Dormitory room" },
+  { id: 26, type: "Bed in Dormitory" },
+  { id: 27, type: "Bungalow" },
+  { id: 28, type: "Chalet" },
+  { id: 29, type: "Holiday home" },
+  { id: 31, type: "Villa" },
+  { id: 32, type: "Mobile home" },
+  { id: 33, type: "Tent" },
+  { id: 34, type: "Powered/Unpowered Site" },
+  { id: 35, type: "King" },
+  { id: 36, type: "Queen" },
+];
 export const CreateRoomForm = () => {
+  
   const { toast } = useToast();
   const [allow, setAllow] = useState<boolean>(false);
   const [urls, setUrls] = useState<string[]>([]);
@@ -88,6 +111,8 @@ export const CreateRoomForm = () => {
         description: "Room added successfully.",
       });
       form.reset();
+      setAllow(false);
+      setUrls([])
     },
     onError: () => {
       toast({
@@ -115,6 +140,7 @@ export const CreateRoomForm = () => {
       capacity: data.capacity,
       area: data.roomArea,
       roomType: data.roomType,
+      price: data.price,
       features: selected.map((feature: FeatureProps) => feature.value),
       images: urls,
       quantity: data.quantity,
@@ -176,7 +202,7 @@ export const CreateRoomForm = () => {
                 name="price"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Room Price</FormLabel>
+                    <FormLabel>Room Price (Default)</FormLabel>
                     <FormControl>
                       <Input
                         placeholder="Enter price"
@@ -346,9 +372,14 @@ export const CreateRoomForm = () => {
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        <SelectItem value="deluxe">Deluxe Room</SelectItem>
-                        <SelectItem value="superior">Superior Room</SelectItem>
-                        <SelectItem value="family">Family Room</SelectItem>
+                        {roomTypes.map((roomType) => (
+                          <SelectItem
+                            value={`${roomType.type}`}
+                            key={roomType.id}
+                          >
+                            {roomType.type}
+                          </SelectItem>
+                        ))}
                       </SelectContent>
                     </Select>
                     <FormMessage />

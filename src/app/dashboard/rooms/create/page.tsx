@@ -8,7 +8,7 @@ import {
   BreadcrumbPage,
 } from "~/components/ui/breadcrumb";
 
-export default function CreateRoom() {
+export default function CreateRoomPage() {
   return (
     <>
       <div className="flex flex-col justify-center gap-4">
@@ -23,7 +23,7 @@ export default function CreateRoom() {
             </BreadcrumbItem>
             <BreadcrumbSeparator />
             <BreadcrumbItem>
-              <BreadcrumbPage>Create Room</BreadcrumbPage>
+              <BreadcrumbPage>Create room</BreadcrumbPage>
             </BreadcrumbItem>
           </BreadcrumbList>
         </Breadcrumb>

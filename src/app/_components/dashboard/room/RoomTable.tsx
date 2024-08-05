@@ -156,9 +156,9 @@ export const RoomTable = () => {
     },
   });
 
-  useEffect(() => {
-    if (roomData.data) setData(roomData.data);
-  }, [roomData.data]);
+  // useEffect(() => {
+  //   if (roomData.data) setData(roomData.data);
+  // }, [roomData.data]);
 
   if (roomData.isFetching)
     return (

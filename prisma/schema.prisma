@@ -17,43 +17,59 @@ model SellerInfo {
 model Hotel {
   hotelId            String     @id @default(uuid())
   hotelName          String     @default("none")
-  location           String     @default("none")
-  manager            String     @default("none")
+  type               Int        @default(1)
+  island             String     @default("none")
+  address            String     @default("none")
+  longitude          Float      @default(0.0)
+  latitude           Float      @default(0.0)
+  description        String     @default("none")
+  firstName          String     @default("none")
+  lastName           String     @default("none")
+  email              String     @default("none")
+  phone              String     @default("none")
+  checkIn            String     @default("none")
+  checkOut           String     @default("none")
+  code               String     @default(uuid())
   createdAt          DateTime   @default(now())
   sellerInfoSellerId String
-  island             String     @default("none")
   seller             SellerInfo @relation(fields: [sellerInfoSellerId], references: [sellerId], onDelete: Cascade)
   Room               Room[]
+
+  @@unique([code])
 }
 
 model Room {
   roomId       String        @id @default(uuid())
+  code         String        @default(uuid())
   roomName     String        @default("none")
   capacity     Int           @default(0)
   area         Int           @default(0)
   features     String[]
-  pictures     String[]
-  hotelHotelId String
   description  String        @default("none")
   roomType     String        @default("none")
   dp           String        @default("none")
   beds         Int           @default(0)
   quantity     Int           @default(1)
-  BlockDate    BlockDate[]
+  price        Int           @default(1)
+  pictures     String[]
+  hotelHotelId String
   hotel        Hotel         @relation(fields: [hotelHotelId], references: [hotelId], onDelete: Cascade)
   RoomBooking  RoomBooking[]
+  BlockDate    BlockDate[]
+
+  @@unique([code])
 }
 
 model RoomBooking {
   bookingId          String             @id @default(uuid())
   startDate          String             @default("none")
   endDate            String             @default("none")
-  roomRoomId         String             @default("none")
   isRefund           Boolean            @default(false)
-  bookingDetailId    String
   price              Int                @default(0)
   type               String             @default("none")
   payPalInfoId       String
+  bookingDetailId    String
+  roomRoomId         String
   bookingDetails     BookingDetail      @relation(fields: [bookingDetailId], references: [bookingDetailId])
   PayPalBoookingInfo PayPalBoookingInfo @relation(fields: [payPalInfoId], references: [paypalBoookingId])
   Room               Room               @relation(fields: [roomRoomId], references: [roomId], onDelete: Cascade)
@@ -68,7 +84,7 @@ model BookingDetail {
   country         String        @default("none")
   phone           String        @default("none")
   postalCode      String        @default("none")
-  streetName      String        @default("none")
+  address         String        @default("none")
   fullName        String        @default("none")
   surName         String        @default("none")
   email           String        @default("none")

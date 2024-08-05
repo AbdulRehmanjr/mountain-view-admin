@@ -15,9 +15,9 @@ import { api } from "~/trpc/react"
 
 export const OrderRefundDialog = ({ order }: { order: BookingDetailProps }) => {
 
-    const makeRefund = api.booking.makeRefund.useMutation({
-        onSuccess: () => { window.location.reload() }
-    })
+    // const makeRefund = api.booking.makeRefund.useMutation({
+    //     onSuccess: () => { window.location.reload() }
+    // })
 
     return (
         <Dialog>
@@ -39,11 +39,11 @@ export const OrderRefundDialog = ({ order }: { order: BookingDetailProps }) => {
                             Close
                         </Button>
                     </DialogClose>
-                    <Button type="button" onClick={() => makeRefund.mutate({ captureId: order.captureId, paymentId: order.paymentId })} disabled={makeRefund.isLoading}>
+                    {/* <Button type="button" onClick={() => makeRefund.mutate({ captureId: order.captureId, paymentId: order.paymentId })} disabled={makeRefund.isLoading}>
                         {
                             makeRefund.isLoading ? <> <ReloadIcon className="mr-2 h-4 w-4 animate-spin" />Please wait</> : 'Confirm'
                         }
-                    </Button>
+                    </Button> */}
                 </DialogFooter>
 
             </DialogContent>

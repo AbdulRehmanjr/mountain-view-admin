@@ -1,4 +1,4 @@
-import { OrderTable } from "~/app/_components/dashboard/orders/OrderTable";
+import { BookingForm } from "~/app/_components/dashboard/booking/CreateBooking";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -19,16 +19,20 @@ export default function BookingPage() {
             </BreadcrumbItem>
             <BreadcrumbSeparator />
             <BreadcrumbItem>
-              <BreadcrumbPage>Bookings</BreadcrumbPage>
+              <BreadcrumbLink href="/dashboard/bookings">Bookings</BreadcrumbLink>
+            </BreadcrumbItem>
+            <BreadcrumbSeparator />
+            <BreadcrumbItem>
+              <BreadcrumbPage>Manual</BreadcrumbPage>
             </BreadcrumbItem>
           </BreadcrumbList>
         </Breadcrumb>
         <h1 className="text-lg font-semibold text-primary md:text-2xl">
-          Bookings
+          Manual Booking
         </h1>
       </div>
-      <div className="flex rounded-lg border border-dashed px-5 py-10 shadow-sm">
-        <OrderTable />
+      <div className="flex flex-1 items-center justify-center rounded-lg border border-dashed py-10 shadow-sm">
+        <BookingForm />
       </div>
     </>
   );

@@ -38,7 +38,7 @@ import {
 import { DeleteRoomPopups } from "~/app/_components/dashboard/room/DeleteRoomPopup";
 import { TableSkeleton } from "~/app/_components/dashboard/skeletons/TableSkeletion";
 
-const columns: ColumnDef<RoomDetailProps>[] = [
+const columns: ColumnDef<RoomTableProps>[] = [
   {
     id: "select",
     header: ({ table }) => (
@@ -72,6 +72,11 @@ const columns: ColumnDef<RoomDetailProps>[] = [
     accessorKey: "roomType",
     header: "Room Type",
     cell: ({ row }) => <div>{row.getValue("roomType")}</div>,
+  },
+  {
+    accessorKey: "code",
+    header: "Room Code",
+    cell: ({ row }) => <div>{row.getValue("code")}</div>,
   },
   {
     accessorKey: "hotelName",
@@ -129,13 +134,13 @@ const columns: ColumnDef<RoomDetailProps>[] = [
 ];
 
 export const RoomTable = () => {
-  const roomData = api.room.getAllRoomsBySellerId.useQuery();
+
 
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
   const [rowSelection, setRowSelection] = useState({});
-  const [data, setData] = useState<RoomDetailProps[]>([]);
+  const [data, setData] = useState<RoomTableProps[]>([]);
 
   const table = useReactTable({
     data,
@@ -155,10 +160,14 @@ export const RoomTable = () => {
       rowSelection,
     },
   });
+    
+  const roomData = api.room.getAllRoomsBySellerId.useQuery();
 
-  // useEffect(() => {
-  //   if (roomData.data) setData(roomData.data);
-  // }, [roomData.data]);
+ 
+
+  useEffect(() => {
+    if (roomData.data) setData(roomData.data);
+  }, [roomData.data]);
 
   if (roomData.isFetching)
     return (

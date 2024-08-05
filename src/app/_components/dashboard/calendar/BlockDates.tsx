@@ -20,7 +20,7 @@ export const BlockDates = () => {
     useHotelAdmin();
   const createBlockDate = api.price.blockRoomByDate.useMutation({
     onSuccess: () => {
-      setBlockDate({ roomId: "none", startDate: null, endDate: null });
+      setBlockDate({ roomId: "none",hotelId:'none', startDate: null, endDate: null });
       window.location.reload();
     },
   });

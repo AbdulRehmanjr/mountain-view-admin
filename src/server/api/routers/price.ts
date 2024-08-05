@@ -2,7 +2,9 @@ import { createTRPCRouter, protectedProcedure } from "../trpc";
 import z from 'zod'
 import { TRPCClientError } from "@trpc/client";
 import dayjs from "dayjs";
-import { AxiosError } from "axios";
+import axios, { AxiosError } from "axios";
+import { TRPCError } from "@trpc/server";
+import { env } from "~/env";
 
 export const PriceRouter = createTRPCRouter({
 
@@ -47,10 +49,28 @@ export const PriceRouter = createTRPCRouter({
             } catch (error) {
                 if (error instanceof TRPCClientError) {
                     console.error(error.message)
-                    throw new Error(error.message)
+                    throw new TRPCError({
+                        code: 'BAD_REQUEST',
+                        message: error.message
+                    })
+                } else if (error instanceof AxiosError) {
+                    console.error(error.response?.data)
+                    throw new TRPCError({
+                        code: 'BAD_REQUEST',
+                        message: error.message
+                    })
+                } else if (error instanceof TRPCError) {
+                    console.error(error.message)
+                    throw new TRPCError({
+                        code: 'NOT_FOUND',
+                        message: error.message
+                    })
                 }
                 console.error(error)
-                throw new Error("Something went wrong.")
+                throw new TRPCError({
+                    code: 'NOT_FOUND',
+                    message: "Something went wrong"
+                })
             }
         }),
 
@@ -60,13 +80,50 @@ export const PriceRouter = createTRPCRouter({
             endDate: z.string(),
             roomId: z.string(),
             percentInc: z.number(),
-            price: z.number()
+            price: z.number(),
+            hotelId: z.string()
         }))
         .mutation(async ({ ctx, input }) => {
 
             try {
-
+                const hotel = await ctx.db.hotel.findUnique({ where: { hotelId: input.hotelId } })
                 const roomDetails = await ctx.db.room.findUnique({ where: { roomId: input.roomId } });
+
+                if (!hotel || !roomDetails) throw new TRPCError({ code: "NOT_FOUND", message: "Data not found" })
+
+                const data = {
+                    "hotelid": hotel.code,
+                    "room": [{
+                        "roomid": roomDetails.code,
+                        "date": [{
+                            "from": input.startDate,
+                            "to": input.endDate,
+                            "rate": [{
+                                "rateplanid": "BAR"
+                            }],
+                            "roomstosell": roomDetails.quantity,
+                            "price": [{
+                                "NumberOfGuests": roomDetails.capacity,
+                                "value": input.price
+                            },
+                            ],
+                            "closed": "0",
+                            "minimumstay": "1",
+                            "maximumstay": "14",
+                            "closedonarrival": "0",
+                            "closedondeparture": "0"
+                        }]
+                    }]
+                }
+
+                const headers = {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Basic ${env.API_KEY}`,
+                    'app-id': `${env.APP_ID}`
+                }
+
+                await axios.post(`https://connect.su-api.com/SUAPI/jservice/OTA_HotelRoom`, data, { headers })
+
 
                 const overlappingRecords = await ctx.db.roomPrice.findMany({
                     where: {
@@ -112,17 +169,31 @@ export const PriceRouter = createTRPCRouter({
             } catch (error) {
                 if (error instanceof TRPCClientError) {
                     console.error(error.message)
-                    throw new Error(error.message)
-                }
-                else if (error instanceof AxiosError) {
-                    console.log(error.response?.data)
-                    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-                    throw new Error(error.response?.data)
+                    throw new TRPCError({
+                        code: 'BAD_REQUEST',
+                        message: error.message
+                    })
+                } else if (error instanceof AxiosError) {
+                    console.error(error.response?.data)
+                    throw new TRPCError({
+                        code: 'BAD_REQUEST',
+                        message: error.message
+                    })
+                } else if (error instanceof TRPCError) {
+                    console.error(error.message)
+                    throw new TRPCError({
+                        code: 'NOT_FOUND',
+                        message: error.message
+                    })
                 }
                 console.error(error)
-                throw new Error('Something went wrong')
+                throw new TRPCError({
+                    code: 'NOT_FOUND',
+                    message: "Something went wrong"
+                })
             }
         }),
+
     deletePriceById: protectedProcedure
         .input(z.object({
             priceId: z.string()
@@ -229,7 +300,7 @@ export const PriceRouter = createTRPCRouter({
                 if (existingDates.length === 0) {
                     await ctx.db.blockDate.create({
                         data: {
-                            startDate:input.startDate,
+                            startDate: input.startDate,
                             endDate: input.endDate,
                             roomRoomId: input.roomId
                         }

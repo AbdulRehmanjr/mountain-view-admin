@@ -5,6 +5,7 @@ import { persist } from 'zustand/middleware'
 
 type DateRangeProps = {
   roomId: string
+  hotelId: string
   startDate: Dayjs | null
   endDate: Dayjs | null
 }
@@ -17,21 +18,21 @@ interface CalendarState {
   dateRange: DateRangeProps
   blockDate: DateRangeProps
   priceDialog: boolean
-  blockDialog : boolean
+  blockDialog: boolean
   setCalendar: (calendar: CalendarProps) => void
   setDateRange: (dateRange: DateRangeProps) => void
   setPriceDialog: (open: boolean) => void
   setBlockDialog: (open: boolean) => void
-  setBlockDate:  (blockDate:DateRangeProps) => void
-  resetStore : ()=>void
+  setBlockDate: (blockDate: DateRangeProps) => void
+  resetStore: () => void
 }
 
 const initialStore = {
   calendar: { totalPeople: 0, roomType: 'none', roomId: 'none' },
-  dateRange: { roomId: 'none', startDate: null, endDate: null },
-  blockDate: { roomId: 'none', startDate: null, endDate: null },
+  dateRange: { roomId: 'none', hotelId: 'none', startDate: null, endDate: null },
+  blockDate: { roomId: 'none',hotelId:'none', startDate: null, endDate: null },
   priceDialog: false,
-  blockDialog:false,
+  blockDialog: false,
 }
 
 export const useHotelAdmin = create<CalendarState>()(

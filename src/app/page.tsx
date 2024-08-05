@@ -3,8 +3,8 @@ import { LoginForm } from "~/app/_components/forms/LoginForm";
 
 export default function HomePage() {
   return (
-    <div className="flex min-h-screen w-full">
-      <div className="flex w-full items-center justify-center lg:w-1/2">
+    <main className="flex min-h-screen w-full">
+      <section className="flex w-full items-center justify-center lg:w-1/2">
         <div className="w-[350px] max-w-full px-4">
           <div className="mb-8 text-center">
             <h1 className="mb-2 text-3xl font-bold">Login</h1>
@@ -14,8 +14,8 @@ export default function HomePage() {
           </div>
           <LoginForm />
         </div>
-      </div>
-      <div className="hidden w-1/2 lg:block">
+      </section>
+      <section className="hidden w-1/2 lg:block">
         <div className="relative h-full w-full">
           <Image
             src="/login_page.jpg"
@@ -42,7 +42,7 @@ export default function HomePage() {
             </div>
           </div>
         </div>
-      </div>
-    </div>
+      </section>
+    </main>
   );
 }

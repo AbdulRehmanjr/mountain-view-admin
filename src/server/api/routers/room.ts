@@ -189,12 +189,12 @@ export const RoomRouter = createTRPCRouter({
                 throw new Error("Error")
             }
         }),
+
     getAllRoomsBySellerId: protectedProcedure
         .query(async ({ ctx }) => {
-
             try {
                 const hotels = await ctx.db.hotel.findMany({ where: { sellerInfoSellerId: ctx.session.user.sellerId } })
-                const roomsList = []
+                const roomsList : RoomTableProps[] = []
                 for (const hotel of hotels) {
                     const rooms = await ctx.db.room.findMany({
                         where: { hotelHotelId: hotel.hotelId },
@@ -203,6 +203,8 @@ export const RoomRouter = createTRPCRouter({
                                 select: {
                                     hotelId: true,
                                     hotelName: true,
+                                    phone:true,
+                                    island:true,
                                     sellerInfoSellerId: true,
                                 }
                             }

@@ -72,7 +72,9 @@ export const BookingRouter = createTRPCRouter({
                             roomType: true,
                             hotel: {
                                 select: {
-                                    hotelName: true
+                                    hotelName: true,
+                                    island:true,
+                                    phone:true,
                                 }
                             }
                         }
@@ -143,7 +145,9 @@ export const BookingRouter = createTRPCRouter({
                             roomType: true,
                             hotel: {
                                 select: {
-                                    hotelName: true
+                                    hotelName: true,
+                                    island:true,
+                                    phone:true,
                                 }
                             }
                         }

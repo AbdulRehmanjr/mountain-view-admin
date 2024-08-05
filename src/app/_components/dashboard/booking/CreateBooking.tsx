@@ -70,7 +70,7 @@ export const BookingForm = () => {
 
   useMemo(() => {
     const roomData = rooms.data?.find(
-      (room: RoomDetailProps) => room.roomName === calendar.roomType,
+      (room) => room.roomName === calendar.roomType,
     );
     if (roomData) setQuantity(roomData.quantity);
   }, [calendar.roomType, rooms.data]);

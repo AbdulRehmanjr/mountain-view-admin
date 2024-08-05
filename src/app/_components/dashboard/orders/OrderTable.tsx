@@ -15,7 +15,7 @@ import {
   getSortedRowModel,
   useReactTable,
 } from "@tanstack/react-table";
-import { PencilIcon, Plus, RefreshCw, SearchIcon } from "lucide-react";
+import { Plus, RefreshCw, SearchIcon } from "lucide-react";
 
 import { Button } from "~/components/ui/button";
 import { Checkbox } from "~/components/ui/checkbox";
@@ -107,14 +107,7 @@ const columns: ColumnDef<BookingDetailProps>[] = [
     enableHiding: false,
     cell: ({ row }) => {
       const booking = row.original;
-      return (
-        <Button variant="outline" asChild>
-          <Link href={`bookings/edit/${booking.bookingId}`}>
-            <PencilIcon className="mr-2 h-3 w-3" />
-            Edit
-          </Link>
-        </Button>
-      );
+      return <PdfButton booking={booking}/>;
     },
   },
 ];
@@ -200,7 +193,6 @@ export const OrderTable = () => {
             <RefreshCw className="mr-2 h-4 w-4" />
             Refresh
           </Button>
-          <PdfButton />
         </div>
       </div>
       <div className="rounded-md border bg-white shadow">

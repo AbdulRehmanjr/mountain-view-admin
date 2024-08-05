@@ -1,21 +1,23 @@
 /* eslint-disable @typescript-eslint/no-unsafe-argument */
 import { NextResponse } from "next/server";
 import { renderToBuffer } from "@react-pdf/renderer";
-import { BookingPDF } from "~/app/_components/dashboard/booking/PdfGeneration";
+import { BookingInvoicePDF } from "~/app/_components/dashboard/pdfs/BookingDetail";
+import dayjs from "dayjs";
 
 
-export async function POST(_req: Request) {
-  try {
 
-    const pdfBuffer = await renderToBuffer(<BookingPDF  />);
+export async function POST(req: Request) {
+  try { 
 
-    // Create and return the response
-    return new NextResponse(pdfBuffer, {
-      status: 200,
-      headers: {
-        'Content-Type': 'application/pdf',
-        'Content-Disposition': `attachment; filename=booking_testing.pdf`,
-      },
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+    const {booking}:{booking:BookingDetailProps} = await req.json()
+    const pdfBuffer = await renderToBuffer(<BookingInvoicePDF bookingDetail={booking} />);
+
+    const base64Pdf = Buffer.from(pdfBuffer).toString('base64');
+
+    return NextResponse.json({ 
+      pdf: base64Pdf,
+      filename: `INVOICE_${booking.bookingDetails.fullName}_${dayjs(new Date).format('DD-MM-YYYY')}.pdf`
     });
   } catch (error) {
     return NextResponse.json({ message: "received" }, { status: 202 });

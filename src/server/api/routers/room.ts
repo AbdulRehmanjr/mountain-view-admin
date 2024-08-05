@@ -193,26 +193,26 @@ export const RoomRouter = createTRPCRouter({
         .query(async ({ ctx }) => {
 
             try {
-                const headers = {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Basic ${env.API_KEY}`,
-                    'app-id': `${env.APP_ID}`
+                const hotels = await ctx.db.hotel.findMany({ where: { sellerInfoSellerId: ctx.session.user.sellerId } })
+                const roomsList = []
+                for (const hotel of hotels) {
+                    const rooms = await ctx.db.room.findMany({
+                        where: { hotelHotelId: hotel.hotelId },
+                        include: {
+                            hotel: {
+                                select: {
+                                    hotelId: true,
+                                    hotelName: true,
+                                    sellerInfoSellerId: true,
+                                }
+                            }
+                        }
+                    })
+                    if (rooms.length != 0)
+                        for (const room of rooms)
+                            roomsList.push(room)
                 }
-                const all = await axios.post(`https://connect.su-api.com/SUAPI/jservice/roomdetails`, {
-                    "hotelid": "HMIIMS"
-                }, { headers })
-                // const hotels = await ctx.db.hotel.findMany({ where: { sellerInfoSellerId: ctx.session.user.sellerId } })
-                // const roomsList: RoomDetailProps[] = []
-                // for (const hotel of hotels) {
-                //     const rooms = await ctx.db.room.findMany({
-                //         where: { hotelHotelId: hotel.hotelId },
-                //         include: { hotel: true }
-                //     })
-                //     if (rooms.length != 0)
-                //         for (const room of rooms)
-                //             roomsList.push(room)
-                // }
-                // return roomsList
+                return roomsList
             } catch (error) {
                 if (error instanceof TRPCClientError) {
                     console.error(error.message)

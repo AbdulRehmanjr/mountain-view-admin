@@ -34,6 +34,7 @@ model Hotel {
   sellerInfoSellerId String
   seller             SellerInfo @relation(fields: [sellerInfoSellerId], references: [sellerId], onDelete: Cascade)
   Room               Room[]
+  RatePlan           RatePlan[]
 
   @@unique([code])
 }
@@ -56,6 +57,18 @@ model Room {
   hotel        Hotel         @relation(fields: [hotelHotelId], references: [hotelId], onDelete: Cascade)
   RoomBooking  RoomBooking[]
   BlockDate    BlockDate[]
+
+  @@unique([code])
+}
+
+model RatePlan {
+  ratePlanId   String @id @default(uuid())
+  code         String @default(uuid())
+  name         String @default("none")
+  description  String @default("none")
+  mealId       Int    @default(15)
+  hotelHotelId String
+  hotelId      Hotel  @relation(fields: [hotelHotelId], references: [hotelId])
 
   @@unique([code])
 }

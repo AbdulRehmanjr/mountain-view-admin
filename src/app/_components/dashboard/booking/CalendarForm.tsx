@@ -55,7 +55,7 @@ export const CalendarForm = ({
     )
       setDateRange({ ...dateRange, endDate: date });
     else if (date.isSame(dateRange.startDate,'days'))
-      setDateRange({ roomId: "none", startDate: null, endDate: null });
+      setDateRange({ roomId: "none",hotelId:'none', startDate: null, endDate: null });
   };
 
   const isBetween = (

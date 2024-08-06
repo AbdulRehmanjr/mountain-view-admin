@@ -39,10 +39,8 @@ interface CreatePriceFormProps {
   onSuccess: () => void;
 }
 
-
-export const CreatePriceForm : React.FC<CreatePriceFormProps> = ({ onSuccess }) => {
-  const { dateRange, priceDialog, setDateRange, setPriceDialog } =
-    useHotelAdmin();
+export const CreatePriceForm: React.FC<CreatePriceFormProps> = ({  onSuccess}) => {
+  const { dateRange, priceDialog, setDateRange, setPriceDialog } = useHotelAdmin();
   const toast = useToast();
 
   const form = useForm<z.infer<typeof formSchema>>({
@@ -56,8 +54,8 @@ export const CreatePriceForm : React.FC<CreatePriceFormProps> = ({ onSuccess }) 
         description: "Room added successfully.",
       });
       setPriceDialog(false);
-      setDateRange({ roomId: "none", startDate: null, endDate: null });
-      onSuccess()
+      setDateRange({ roomId: "none", hotelId:'none',startDate: null, endDate: null });
+      onSuccess();
     },
     onError: () => {
       toast.toast({
@@ -70,8 +68,8 @@ export const CreatePriceForm : React.FC<CreatePriceFormProps> = ({ onSuccess }) 
 
   useEffect(() => {
     form.reset({
-      startDate: dayjs(dateRange.startDate).format('YYYY-MM-DD'),
-      endDate: dayjs(dateRange.endDate).format('YYYY-MM-DD'),
+      startDate: dayjs(dateRange.startDate).format("YYYY-MM-DD"),
+      endDate: dayjs(dateRange.endDate).format("YYYY-MM-DD"),
     });
   }, [dateRange, form]);
 
@@ -82,6 +80,7 @@ export const CreatePriceForm : React.FC<CreatePriceFormProps> = ({ onSuccess }) 
       roomId: dateRange.roomId,
       percentInc: data.percentInc,
       price: data.price,
+      hotelId:dateRange.hotelId
     });
   };
 

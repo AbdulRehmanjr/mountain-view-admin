@@ -1,14 +1,15 @@
-'use client'
+"use client";
+
 import { PDFViewer } from "@react-pdf/renderer";
 import { BookingInvoicePDF } from "./BookingDetail";
+import { GuestRegistrationPDF } from "./GuestHouseRegistration";
 
 
-export const BookingInvoicePDFViewer = ({
-  bookingDetail,
-}: {
-  bookingDetail: BookingDetailProps ;
-}) => (
-  <PDFViewer width="100%" height="100%">
-    <BookingInvoicePDF bookingDetail={bookingDetail} />
-  </PDFViewer>
-);
+export const PdfPreview = () => {
+
+  return (
+    <PDFViewer width="100%" height={900}>
+      <GuestRegistrationPDF/>
+    </PDFViewer>
+  );
+};

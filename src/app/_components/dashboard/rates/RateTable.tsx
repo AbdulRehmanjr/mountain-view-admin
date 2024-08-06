@@ -14,17 +14,10 @@ import {
   getSortedRowModel,
   useReactTable,
 } from "@tanstack/react-table";
-import {
-  PencilIcon,
-  Plus,
-  RefreshCw,
-  SearchIcon,
-} from "lucide-react";
+import { PencilIcon, Plus, RefreshCw, SearchIcon } from "lucide-react";
 import { useEffect, useState } from "react";
-
 import { Button } from "~/components/ui/button";
 import { Checkbox } from "~/components/ui/checkbox";
-
 import { Input } from "~/components/ui/input";
 import {
   Table,
@@ -34,11 +27,10 @@ import {
   TableHeader,
   TableRow,
 } from "~/components/ui/table";
-
-import { DeleteRoomPopups } from "~/app/_components/dashboard/room/DeleteRoomPopup";
 import { TableSkeleton } from "~/app/_components/dashboard/skeletons/TableSkeletion";
+import { DeleteRatesPopup } from "~/app/_components/dashboard/rates/DeleteRateDialog";
 
-const columns: ColumnDef<RoomTableProps>[] = [
+const columns: ColumnDef<RatePlanDetailProps>[] = [
   {
     id: "select",
     header: ({ table }) => (
@@ -64,56 +56,27 @@ const columns: ColumnDef<RoomTableProps>[] = [
     enableHiding: false,
   },
   {
-    accessorKey: "roomName",
-    header: "Room Name",
-    cell: ({ row }) => <div>{row.getValue("roomName")}</div>,
-  },
-  {
-    accessorKey: "roomType",
-    header: "Room Type",
-    cell: ({ row }) => <div>{row.getValue("roomType")}</div>,
+    accessorKey: "name",
+    header: "Rate name",
+    cell: ({ row }) => <div>{row.getValue("name")}</div>,
   },
   {
     accessorKey: "code",
-    header: "Room Code",
+    header: "Rate code",
     cell: ({ row }) => <div>{row.getValue("code")}</div>,
   },
   {
     accessorKey: "hotelName",
-    header: "Hotel Name",
+    header: "Hotel name",
     cell: ({ row }) => {
-      const hotel = row.original.hotel.hotelName;
+      const hotel = row.original.hotelId.hotelName;
       return <div className="font-medium">{hotel}</div>;
     },
   },
   {
-    accessorKey: "quantity",
-    header: "Quantity",
-    cell: ({ row }) => {
-      return <div className="font-medium">{row.getValue("quantity")}</div>;
-    },
-  },
-  {
-    accessorKey: "capacity",
-    header: "Capacity",
-    cell: ({ row }) => {
-      return <div className="font-medium">{row.getValue("capacity")}</div>;
-    },
-  },
-  {
-    accessorKey: "beds",
-    header: "Beds",
-    cell: ({ row }) => {
-      return <div className="font-medium">{row.getValue("beds")}</div>;
-    },
-  },
-
-  {
-    accessorKey: "area",
-    header: "Area (sqm)",
-    cell: ({ row }) => {
-      return <div className="font-medium">{row.getValue("area")}</div>;
-    },
+    accessorKey: "mealId",
+    header: "Meal id",
+    cell: ({ row }) => <div>{row.getValue("mealId")}</div>,
   },
   {
     id: "actions",
@@ -123,7 +86,7 @@ const columns: ColumnDef<RoomTableProps>[] = [
       const room = row.original;
       return (
         <Button variant={"outline"} asChild>
-          <Link href={`rooms/edit/${room.roomId}`}>
+          <Link href={`rates/${room.ratePlanId}`}>
             <PencilIcon className="mr-2 h-3 w-3" />
             Edit
           </Link>
@@ -133,14 +96,12 @@ const columns: ColumnDef<RoomTableProps>[] = [
   },
 ];
 
-export const RoomTable = () => {
-
-
+export const RateTable = () => {
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
   const [rowSelection, setRowSelection] = useState({});
-  const [data, setData] = useState<RoomTableProps[]>([]);
+  const [data, setData] = useState<RatePlanDetailProps[]>([]);
 
   const table = useReactTable({
     data,
@@ -160,19 +121,25 @@ export const RoomTable = () => {
       rowSelection,
     },
   });
-    
-  const roomData = api.room.getAllRoomsBySellerId.useQuery();
 
- 
+  const rateData = api.rateplan.getRatePlanBySellerId.useQuery();
 
   useEffect(() => {
-    if (roomData.data) setData(roomData.data);
-  }, [roomData.data]);
+    if (rateData.data) setData(rateData.data);
+  }, [rateData.data]);
 
-  if (roomData.isFetching)
+  if (rateData.isFetching)
     return (
       <div className="w-full">
-        <TableSkeleton headers={["Room Name",'Room Type','Hotel Name','Quantity','Capacity','Beds','Area']} />
+        <TableSkeleton
+          headers={[
+            "Rate name",
+            "Rate code",
+            "Hotel name",
+            "Meal id",
+            "Actions",
+          ]}
+        />
       </div>
     );
 
@@ -182,35 +149,33 @@ export const RoomTable = () => {
         <div className="relative flex-1">
           <SearchIcon className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
           <Input
-            placeholder="Search room name"
-            value={
-              (table.getColumn("roomName")?.getFilterValue() as string) ?? ""
-            }
+            placeholder="Search rate name"
+            value={(table.getColumn("name")?.getFilterValue() as string) ?? ""}
             onChange={(event) =>
-              table.getColumn("roomName")?.setFilterValue(event.target.value)
+              table.getColumn("name")?.setFilterValue(event.target.value)
             }
             className="pl-10"
           />
         </div>
         <div className="flex items-center gap-2">
           <Button size="sm" asChild>
-            <Link href={"/dashboard/rooms/create"}>
+            <Link href={"/dashboard/rates/create"}>
               <Plus className="mr-2 h-4 w-4" />
-              Add Room
+              Add rate
             </Link>
           </Button>
           <Button
             variant="outline"
             size="sm"
-            onClick={() => roomData.refetch()}
+            onClick={() => rateData.refetch()}
           >
             <RefreshCw className="mr-2 h-4 w-4" />
             Refresh
           </Button>
-          <DeleteRoomPopups
-            roomIds={table
+          <DeleteRatesPopup
+            ratePlanCodes={table
               .getSelectedRowModel()
-              .flatRows.map((row) => row.original.roomId)}
+              .flatRows.map((row) => row.original.code)}
           />
         </div>
       </div>

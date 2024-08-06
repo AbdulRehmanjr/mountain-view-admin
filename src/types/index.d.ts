@@ -16,7 +16,7 @@ type RoomDetailProps = {
     roomId: string
     roomName: string
     capacity: number
-    code:string
+    code: string
     area: number
     beds: number
     features: string[]
@@ -53,8 +53,8 @@ type RoomTableProps = {
     hotel: {
         hotelName: string;
         hotelId: string;
-        island:string
-        phone:string
+        island: string
+        phone: string
         sellerInfoSellerId: string;
     };
 }
@@ -132,8 +132,8 @@ type BookingDetailProps = {
         roomType: string
         hotel: {
             hotelName: string
-            island:string
-            phone:string
+            island: string
+            phone: string
         }
     }
     PayPalBoookingInfo: {
@@ -160,6 +160,31 @@ type HotelProps = {
     code: string
     createdAt: Date
     sellerInfoSellerId: string
+}
+
+
+type RatePlanProps = {
+    ratePlanId: string
+    code: string
+    name: string
+    description: string
+    mealId: number
+    hotelHotelId: string
+}
+
+type RatePlanDetailProps = {
+    ratePlanId: string
+    code: string
+    name: string
+    description: string
+    mealId: number
+    hotelHotelId: string
+    hotelId: {
+        hotelId: string
+        code: string
+        hotelName:string
+        sellerInfoSellerId: string
+    }
 }
 
 type StatusProps = {

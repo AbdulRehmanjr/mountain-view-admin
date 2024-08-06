@@ -47,10 +47,11 @@ export const RatePlanRouter = createTRPCRouter({
     getRatePlanBySellerId: protectedProcedure
         .query(async ({ ctx }) => {
             try {
+
                 const hotels = await ctx.db.hotel.findMany({ where: { sellerInfoSellerId: ctx.session.user.sellerId } })
+                
                 const rateList: RatePlanDetailProps[] = []
                 for (const hotel of hotels) {
-
                     const rates: RatePlanDetailProps[] = await ctx.db.ratePlan.findMany({
                         where: { hotelHotelId: hotel.hotelId },
                         include: {

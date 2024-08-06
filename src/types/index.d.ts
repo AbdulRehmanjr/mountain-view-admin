@@ -64,9 +64,8 @@ type PriceProps = {
     startDate: string
     endDate: string
     price: number
-    roomType: string
     roomId: string
-    percentInc: number
+    planCode:string
 }
 
 type BookingProps = {
@@ -253,3 +252,18 @@ type MyRentGroupProps = {
     groupName: string
 }
 
+type ResultEntry = {
+    roomId: string;
+    roomName: string;
+    quantity:number
+    hotelName: string;
+    hotelId: string;
+    ratePlans: {
+        planCode: string;
+        planName: string;
+        prices: {
+            date: string;
+            price: number;
+        }[];
+    }[];
+};

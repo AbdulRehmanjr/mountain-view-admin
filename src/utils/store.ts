@@ -6,12 +6,12 @@ import { persist } from 'zustand/middleware'
 type DateRangeProps = {
   roomId: string
   hotelId: string
+  subRateId: string
   startDate: Dayjs | null
   endDate: Dayjs | null
 }
 
 type CalendarProps = { roomType: string, totalPeople: number, roomId: string }
-
 
 interface CalendarState {
   calendar: CalendarProps
@@ -29,8 +29,8 @@ interface CalendarState {
 
 const initialStore = {
   calendar: { totalPeople: 0, roomType: 'none', roomId: 'none' },
-  dateRange: { roomId: 'none', hotelId: 'none', startDate: null, endDate: null },
-  blockDate: { roomId: 'none',hotelId:'none', startDate: null, endDate: null },
+  dateRange: { roomId: 'none', hotelId: 'none', subRateId: 'none', startDate: null, endDate: null },
+  blockDate: { roomId: 'none', hotelId: 'none', subRateId: "none", startDate: null, endDate: null },
   priceDialog: false,
   blockDialog: false,
 }

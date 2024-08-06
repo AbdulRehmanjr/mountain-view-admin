@@ -77,11 +77,7 @@ export const BookingForm = () => {
 
   const calculatePriceSum = (startDate: Dayjs, endDate: Dayjs) => {
     const allDates: string[] = getAllDatesBetween(startDate, endDate);
-    const price = extractPricesForDates(
-      allDates,
-      pricesData.data?.get(calendar.roomId),
-      calendar.totalPeople,
-    );
+    const price = extractPricesForDates(allDates, [], calendar.totalPeople);
     return price;
   };
 
@@ -141,11 +137,10 @@ export const BookingForm = () => {
                           const value = Number(e.target.value);
                           if (value > 0) {
                             field.onChange(Number(value));
-                            const children = form.getValues('children')
+                            const children = form.getValues("children");
                             setCalendar({
                               ...calendar,
-                              totalPeople:
-                                value + (children ? children : 0),
+                              totalPeople: value + (children ? children : 0),
                             });
                           }
                         }
@@ -178,8 +173,7 @@ export const BookingForm = () => {
                             field.onChange(Number(value));
                             setCalendar({
                               ...calendar,
-                              totalPeople:
-                                value + +form.getValues("adults"),
+                              totalPeople: value + +form.getValues("adults"),
                             });
                           }
                         }
@@ -212,8 +206,7 @@ export const BookingForm = () => {
                             field.onChange(Number(value));
                             setCalendar({
                               ...calendar,
-                              totalPeople:
-                                value + +form.getValues("adults"),
+                              totalPeople: value + +form.getValues("adults"),
                             });
                           }
                         }
@@ -468,11 +461,7 @@ export const BookingForm = () => {
           </CardContent>
         </Card>
         <div className="col-span-2 flex justify-center">
-          <Button
-            type="submit"
-            disabled={createBooking.isLoading}
-    
-          >
+          <Button type="submit" disabled={createBooking.isLoading}>
             {createBooking.isLoading ? (
               <>
                 {" "}

@@ -1,4 +1,4 @@
-'use client'
+"use client";
 
 import React, { useCallback, useMemo, useState } from "react";
 import dayjs, { type Dayjs } from "dayjs";
@@ -42,15 +42,26 @@ export const CreatePriceCalendar = () => {
     setSelectedDate((prevDate) => prevDate.clone().add(1, "month"));
   };
 
-  const handleDateClick = (date: Dayjs, roomId: string,hotelId:string) => {
+  const handleDateClick = (date: Dayjs, roomId: string, hotelId: string) => {
     if (dateRange.roomId !== roomId)
-      setDateRange({ roomId: roomId,hotelId:hotelId, startDate: date, endDate: date });
+      setDateRange({
+        roomId: roomId,
+        hotelId: hotelId,
+        startDate: date,
+        endDate: date,
+      });
     else if (dateRange.startDate === null)
       setDateRange({ ...dateRange, startDate: date, endDate: date });
     else if (!date.isBefore(dateRange.startDate, "day")) {
       setPriceDialog(true);
       setDateRange({ ...dateRange, endDate: date });
-    } else setDateRange({ roomId: "none",hotelId:hotelId ,startDate: null, endDate: null });
+    } else
+      setDateRange({
+        roomId: "none",
+        hotelId: "none",
+        startDate: null,
+        endDate: null,
+      });
   };
 
   const isInRange = (date: Dayjs, roomId: string) => {
@@ -69,10 +80,10 @@ export const CreatePriceCalendar = () => {
     hotelId,
     className,
   }: {
-    date: Dayjs
-    roomId: string
-    hotelId:string
-    className?: string
+    date: Dayjs;
+    roomId: string;
+    hotelId: string;
+    className?: string;
   }) => {
     const isSelected = isInRange(date, roomId);
     const getPrice = (date: Dayjs, roomId: string): number => {
@@ -93,7 +104,7 @@ export const CreatePriceCalendar = () => {
           isSelected && "bg-blue-600 text-white",
           className,
         )}
-        onClick={() => handleDateClick(date, roomId,hotelId)}
+        onClick={() => handleDateClick(date, roomId, hotelId)}
       >
         <span>{price ?? 0} €</span>
       </td>

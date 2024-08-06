@@ -1,5 +1,7 @@
 "use client";
 
+
+import { useEffect } from "react";
 import { ReloadIcon } from "@radix-ui/react-icons";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -26,12 +28,13 @@ import {
   DialogTrigger,
 } from "~/components/ui/dialog";
 import { useHotelAdmin } from "~/utils/store";
-import { useEffect } from "react";
+import { Select, SelectContent, SelectItem,  SelectTrigger, SelectValue } from "~/components/ui/select";
+
 
 const formSchema = z.object({
   startDate: z.string({ required_error: "Field is required" }),
   endDate: z.string({ required_error: "Field is required" }),
-  percentInc: z.number({ required_error: "Field is required" }),
+  ratePlan: z.string({ required_error: "Field is required" }),
   price: z.number({ required_error: "Field is required" }),
 });
 
@@ -40,13 +43,14 @@ interface CreatePriceFormProps {
 }
 
 export const CreatePriceForm: React.FC<CreatePriceFormProps> = ({  onSuccess}) => {
-  const { dateRange, priceDialog, setDateRange, setPriceDialog } = useHotelAdmin();
-  const toast = useToast();
 
+  const toast = useToast();
+  const { dateRange, priceDialog, setDateRange, setPriceDialog } = useHotelAdmin();
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
   });
 
+  const ratePlans = api.rateplan.getRatePlanBySellerId.useQuery()
   const createPrice = api.price.createPrice.useMutation({
     onSuccess: () => {
       toast.toast({
@@ -78,7 +82,7 @@ export const CreatePriceForm: React.FC<CreatePriceFormProps> = ({  onSuccess}) =
       startDate: dayjs(data.startDate).format("YYYY-MM-DD"),
       endDate: dayjs(data.endDate).format("YYYY-MM-DD"),
       roomId: dateRange.roomId,
-      percentInc: data.percentInc,
+      ratePlan: data.ratePlan,
       price: data.price,
       hotelId:dateRange.hotelId
     });
@@ -146,32 +150,30 @@ export const CreatePriceForm: React.FC<CreatePriceFormProps> = ({  onSuccess}) =
                 </FormItem>
               )}
             />
-            <FormField
-              control={form.control}
-              name="percentInc"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Enter percentage inc for double</FormLabel>
-                  <FormControl>
-                    <Input
-                      placeholder="Enter percenatage increment for large family"
-                      {...field}
-                      value={field.value ?? ""}
-                      onChange={(e) => {
-                        const value = e.target.value;
-                        if (
-                          value === "" ||
-                          (/^\d+$/.test(value) && parseInt(value) > 0)
-                        ) {
-                          field.onChange(value === "" ? "" : parseInt(value));
-                        }
-                      }}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+             <FormField
+                control={form.control}
+                name="ratePlan"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Hotel</FormLabel>
+                    <Select onValueChange={field.onChange} value={field.value ?? ''}>
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select a rate plan" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {ratePlans.data?.map((ratePlan,index) => (
+                          <SelectItem key={index} value={ratePlan.code}>
+                            {ratePlan.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
             <FormField
               control={form.control}
               name="price"

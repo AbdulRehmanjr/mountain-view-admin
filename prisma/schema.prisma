@@ -106,15 +106,14 @@ model BookingDetail {
 }
 
 model RoomPrice {
-  priceId    String   @id @default(uuid())
-  startDate  String   @default("none")
-  endDate    String   @default("none")
-  roomType   String   @default("none")
-  roomId     String   @default("none")
-  percentInc Int      @default(0)
-  price      Int      @default(0)
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @default(now()) @updatedAt
+  priceId   String   @id @default(uuid())
+  startDate String   @default("none")
+  endDate   String   @default("none")
+  roomId    String   @default("none")
+  planCode  String   @default("none")
+  price     Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
 }
 
 model BlockDate {

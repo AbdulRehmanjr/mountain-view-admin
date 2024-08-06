@@ -64,9 +64,8 @@ type PriceProps = {
     startDate: string
     endDate: string
     price: number
-    roomType: string
     roomId: string
-    percentInc: number
+    planCode:string
 }
 
 type BookingProps = {

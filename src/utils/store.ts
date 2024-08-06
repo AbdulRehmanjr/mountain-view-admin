@@ -12,7 +12,6 @@ type DateRangeProps = {
 
 type CalendarProps = { roomType: string, totalPeople: number, roomId: string }
 
-
 interface CalendarState {
   calendar: CalendarProps
   dateRange: DateRangeProps

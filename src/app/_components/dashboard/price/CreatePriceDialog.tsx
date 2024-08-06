@@ -58,7 +58,7 @@ export const CreatePriceForm: React.FC<CreatePriceFormProps> = ({  onSuccess}) =
         description: "Room added successfully.",
       });
       setPriceDialog(false);
-      setDateRange({ roomId: "none", hotelId:'none',startDate: null, endDate: null });
+      setDateRange({ roomId: "none", hotelId:'none',subRateId:'none',startDate: null, endDate: null });
       onSuccess();
     },
     onError: () => {

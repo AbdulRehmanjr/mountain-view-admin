@@ -11,7 +11,7 @@ export const CalendarForm = ({
   roomId,
   totalPeople,
 }: {
-  pricesData: Map<string, { date: string; price: number,Inc:number }[]> | undefined;
+  pricesData: ResultEntry[] | undefined;
   roomId: string;
   totalPeople: number;
 }) => {
@@ -54,8 +54,14 @@ export const CalendarForm = ({
       !date.isSame(dateRange.startDate, "days")
     )
       setDateRange({ ...dateRange, endDate: date });
-    else if (date.isSame(dateRange.startDate,'days'))
-      setDateRange({ roomId: "none",hotelId:'none', startDate: null, endDate: null });
+    else if (date.isSame(dateRange.startDate, "days"))
+      setDateRange({
+        roomId: "none",
+        hotelId: "none",
+        subRateId: "none",
+        startDate: null,
+        endDate: null,
+      });
   };
 
   const isBetween = (
@@ -74,24 +80,12 @@ export const CalendarForm = ({
     const isPast = date.isBefore(dayjs(), "day");
     const isSelected = isBetween(date, dateRange.startDate, dateRange.endDate);
 
-    const calculatePrice = (priceEntry: number, incrementPercentage: number) =>  
-      totalPeople >3 ?  priceEntry + (priceEntry * (incrementPercentage/100)): priceEntry
+    const calculatePrice = (priceEntry: number, incrementPercentage: number) =>
+      totalPeople > 3
+        ? priceEntry + priceEntry * (incrementPercentage / 100)
+        : priceEntry;
 
-    const getPrice = (date: Dayjs, roomId: string): number => {
-      if (pricesData) {
-        const roomPrices = pricesData.get(roomId);
-        console.log(roomPrices)
-        if (!roomPrices) return 0;
-        const dateString = date.format("YYYY-MM-DD");
-        const priceEntry = roomPrices.find(
-          (entry) => entry.date === dateString,
-        );
-        return priceEntry ? calculatePrice(priceEntry.price,priceEntry.Inc): 0;
-      }
-      return 0;
-    };
-
-    const price = getPrice(date, roomId);
+    const price = 0;
 
     return (
       <td className="relative border p-1 md:p-2">

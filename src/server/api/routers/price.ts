@@ -19,13 +19,16 @@ type RoomPrice = {
 };
 
 type Room = {
-    roomId: string;
-    roomName: string;
+    roomId: string
+    roomName: string
+    code: string
+    quantity: number
     hotel: {
-        hotelId: string;
         hotelName: string;
+        hotelId: string;
+        code: string
     };
-};
+}
 
 type RatePlan = {
     code: string;
@@ -33,20 +36,7 @@ type RatePlan = {
     hotelHotelId: string;
 };
 
-type ResultEntry = {
-    roomId: string;
-    roomName: string;
-    hotelName: string;
-    hotelId: string;
-    ratePlans: {
-        planCode: string;
-        planName: string;
-        prices: {
-            date: string;
-            price: number;
-        }[];
-    }[];
-};
+
 
 export const PriceRouter = createTRPCRouter({
 
@@ -64,10 +54,11 @@ export const PriceRouter = createTRPCRouter({
             }
         }),
 
-    getAllPrices: protectedProcedure.query(async ({ ctx }) => {
+    getAllPrices: protectedProcedure.query(async ({ ctx }): Promise<ResultEntry[]> => {
         try {
-            const hotels = await ctx.db.hotel.findMany({ where: { sellerInfoSellerId: ctx.session.user.sellerId } })
-            const roomsList = []
+            const hotels = await ctx.db.hotel.findMany({ where: { sellerInfoSellerId: ctx.session.user.sellerId } });
+            const roomsList: Room[] = [];
+
             for (const hotel of hotels) {
                 const rooms = await ctx.db.room.findMany({
                     where: { hotelHotelId: hotel.hotelId },
@@ -76,47 +67,51 @@ export const PriceRouter = createTRPCRouter({
                             select: {
                                 hotelId: true,
                                 hotelName: true,
+                                code: true,
                             }
                         }
                     }
-                })
-                if (rooms.length != 0)
-                    for (const room of rooms)
-                        roomsList.push(room)
+                });
+                roomsList.push(...rooms);
             }
-            // Fetch room prices
-            const prices = await ctx.db.roomPrice.findMany();
 
-            // Fetch all rooms with their hotel information
-            const rooms = await ctx.db.room.findMany({
-                where: {},
-                include: {
-                    hotel: {
-                        select: {
-                            hotelId: true,
-                            hotelName: true,
-                        },
-                    },
-                },
-            });
+            // selectedProps from rooms 
+            const selectedRoomList: Room[] = roomsList.map(data => ({
+                roomName: data.roomName,
+                roomId: data.roomId,
+                code: data.code,
+                quantity: data.quantity,
+                hotel: {
+                    hotelId: data.hotel.hotelId,
+                    hotelName: data.hotel.hotelName,
+                    code: data.hotel.code
+                }
+            }));
+
+            // Fetch room prices
+            const prices: RoomPrice[] = [];
+
+            for (const room of selectedRoomList) {
+                const data = await ctx.db.roomPrice.findMany({
+                    where: { roomId: room.roomId }
+                });
+                prices.push(...data);
+            }
 
             // Create a map for quick room lookups
-            const roomMap = new Map<string, Room>(rooms.map(room => [room.roomId, room]));
+            const roomMap = new Map<string, Room>(roomsList.map(room => [room.roomId, room]));
 
             // Create a set of unique hotel IDs
-            const hotelIds = new Set<string>(rooms.map(room => room.hotel.hotelId));
+            const hotelIds = new Set<string>(roomsList.map(room => room.hotel.hotelId));
 
             // Fetch rate plans for all relevant hotels
             const ratePlans: RatePlan[] = await ctx.db.ratePlan.findMany({
-                where: {
-                    hotelHotelId: {
-                        in: Array.from(hotelIds),
-                    },
-                },
+                where: { hotelHotelId: { in: Array.from(hotelIds) } },
             });
 
             // Create a map for quick rate plan lookups, grouped by hotel
             const ratePlanMap = new Map<string, Map<string, RatePlan>>();
+
             ratePlans.forEach(plan => {
                 if (!ratePlanMap.has(plan.hotelHotelId)) {
                     ratePlanMap.set(plan.hotelHotelId, new Map());
@@ -124,31 +119,36 @@ export const PriceRouter = createTRPCRouter({
                 ratePlanMap.get(plan.hotelHotelId)!.set(plan.code, plan);
             });
 
+            // Initialize the result array
             const result: ResultEntry[] = [];
 
-            prices.forEach((price) => {
+            // Create a map to track rooms that have been added to the result
+            const addedRoomsMap = new Map<string, ResultEntry>();
+
+            // Iterate over all prices to populate result entries
+            prices.forEach(price => {
                 const room = roomMap.get(price.roomId);
                 if (!room) {
                     console.warn(`Room not found for roomId: ${price.roomId}`);
-                    return; // Skip this price entry if room not found
+                    return;
                 }
 
-                let roomEntry = result.find((entry) => entry.roomId === price.roomId);
+                let roomEntry = addedRoomsMap.get(price.roomId);
 
                 if (!roomEntry) {
                     roomEntry = {
                         roomId: price.roomId,
                         roomName: room.roomName,
+                        quantity: room.quantity,
                         hotelName: room.hotel.hotelName,
                         hotelId: room.hotel.hotelId,
                         ratePlans: [],
                     };
+                    addedRoomsMap.set(price.roomId, roomEntry);
                     result.push(roomEntry);
                 }
 
-                let ratePlanEntry = roomEntry.ratePlans.find(
-                    (plan) => plan.planCode === price.planCode
-                );
+                let ratePlanEntry = roomEntry.ratePlans.find(plan => plan.planCode === price.planCode);
 
                 if (!ratePlanEntry) {
                     const hotelRatePlans = ratePlanMap.get(room.hotel.hotelId);
@@ -162,10 +162,8 @@ export const PriceRouter = createTRPCRouter({
                 }
 
                 const datesInRange = getDateList(price.startDate, price.endDate);
-                datesInRange.forEach((date) => {
-                    const existingPrice = ratePlanEntry.prices.find(
-                        (p) => p.date === date
-                    );
+                datesInRange.forEach(date => {
+                    const existingPrice = ratePlanEntry.prices.find(p => p.date === date);
                     if (existingPrice) {
                         existingPrice.price = price.price;
                     } else {
@@ -174,7 +172,20 @@ export const PriceRouter = createTRPCRouter({
                 });
             });
 
-            console.log(result)
+            // Ensure rooms without rate plans are added with an empty ratePlans array
+            selectedRoomList.forEach(room => {
+                if (!addedRoomsMap.has(room.roomId)) {
+                    result.push({
+                        roomId: room.roomId,
+                        roomName: room.roomName,
+                        quantity: room.quantity,
+                        hotelName: room.hotel.hotelName,
+                        hotelId: room.hotel.hotelId,
+                        ratePlans: [],
+                    });
+                }
+            });
+
             return result;
         } catch (error) {
             console.error("Error in getAllPrices:", error);

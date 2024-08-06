@@ -24,8 +24,6 @@ export const randomCode = (length: number, prefix: string) => {
     return generatedString.slice(0, length)
 }
 
-
-
 export const redeemCode = (length: number) => {
 
     let generatedString = '';

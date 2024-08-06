@@ -252,3 +252,18 @@ type MyRentGroupProps = {
     groupName: string
 }
 
+type ResultEntry = {
+    roomId: string;
+    roomName: string;
+    quantity:number
+    hotelName: string;
+    hotelId: string;
+    ratePlans: {
+        planCode: string;
+        planName: string;
+        prices: {
+            date: string;
+            price: number;
+        }[];
+    }[];
+};

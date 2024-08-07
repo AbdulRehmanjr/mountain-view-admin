@@ -1,6 +1,5 @@
 "use client";
 
-
 import { useEffect } from "react";
 import { ReloadIcon } from "@radix-ui/react-icons";
 import { useForm } from "react-hook-form";
@@ -28,8 +27,13 @@ import {
   DialogTrigger,
 } from "~/components/ui/dialog";
 import { useHotelAdmin } from "~/utils/store";
-import { Select, SelectContent, SelectItem,  SelectTrigger, SelectValue } from "~/components/ui/select";
-
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "~/components/ui/select";
 
 const formSchema = z.object({
   startDate: z.string({ required_error: "Field is required" }),
@@ -42,15 +46,17 @@ interface CreatePriceFormProps {
   onSuccess: () => void;
 }
 
-export const CreatePriceForm: React.FC<CreatePriceFormProps> = ({  onSuccess}) => {
-
+export const CreatePriceForm: React.FC<CreatePriceFormProps> = ({
+  onSuccess,
+}) => {
   const toast = useToast();
-  const { dateRange, priceDialog, setDateRange, setPriceDialog } = useHotelAdmin();
+  const { dateRange, priceDialog, setDateRange, setPriceDialog } =
+    useHotelAdmin();
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
   });
 
-  const ratePlans = api.rateplan.getRatePlanBySellerId.useQuery()
+  const ratePlans = api.rateplan.getRatePlanBySellerId.useQuery();
   const createPrice = api.price.createPrice.useMutation({
     onSuccess: () => {
       toast.toast({
@@ -58,7 +64,13 @@ export const CreatePriceForm: React.FC<CreatePriceFormProps> = ({  onSuccess}) =
         description: "Room added successfully.",
       });
       setPriceDialog(false);
-      setDateRange({ roomId: "none", hotelId:'none',subRateId:'none',startDate: null, endDate: null });
+      setDateRange({
+        roomId: "none",
+        hotelId: "none",
+        subRateId: "none",
+        startDate: null,
+        endDate: null,
+      });
       onSuccess();
     },
     onError: () => {
@@ -74,6 +86,7 @@ export const CreatePriceForm: React.FC<CreatePriceFormProps> = ({  onSuccess}) =
     form.reset({
       startDate: dayjs(dateRange.startDate).format("YYYY-MM-DD"),
       endDate: dayjs(dateRange.endDate).format("YYYY-MM-DD"),
+      ratePlan: dateRange.subRateId,
     });
   }, [dateRange, form]);
 
@@ -84,7 +97,7 @@ export const CreatePriceForm: React.FC<CreatePriceFormProps> = ({  onSuccess}) =
       roomId: dateRange.roomId,
       ratePlan: data.ratePlan,
       price: data.price,
-      hotelId:dateRange.hotelId
+      hotelId: dateRange.hotelId,
     });
   };
 
@@ -150,30 +163,33 @@ export const CreatePriceForm: React.FC<CreatePriceFormProps> = ({  onSuccess}) =
                 </FormItem>
               )}
             />
-             <FormField
-                control={form.control}
-                name="ratePlan"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Hotel</FormLabel>
-                    <Select onValueChange={field.onChange} value={field.value ?? ''}>
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select a rate plan" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        {ratePlans.data?.map((ratePlan,index) => (
-                          <SelectItem key={index} value={ratePlan.code}>
-                            {ratePlan.name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+            <FormField
+              control={form.control}
+              name="ratePlan"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Hotel</FormLabel>
+                  <Select
+                    onValueChange={field.onChange}
+                    value={field.value ?? ""}
+                  >
+                    <FormControl>
+                      <SelectTrigger disabled>
+                        <SelectValue placeholder="Select a rate plan" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      {ratePlans.data?.map((ratePlan, index) => (
+                        <SelectItem key={index} value={ratePlan.code}>
+                          {ratePlan.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
             <FormField
               control={form.control}
               name="price"

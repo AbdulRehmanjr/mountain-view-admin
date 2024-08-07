@@ -7,13 +7,13 @@ import { cn } from "~/lib/utils";
 import { useHotelAdmin } from "~/utils/store";
 import { CreatePriceForm } from "~/app/_components/dashboard/price/CreatePriceDialog";
 import { Button } from "~/components/ui/button";
-import { CalendarSkeleton } from "~/app/_components/dashboard/skeletons/CalendarSkeleton";
 import {
   Collapsible,
   CollapsibleContent,
   CollapsibleTrigger,
 } from "~/components/ui/collapsible";
 import { ChevronDown } from "lucide-react";
+import { SimpleLoader } from "~/app/_components/dashboard/skeletons/SimpleCalendar";
 
 dayjs.extend(isBetween);
 
@@ -126,7 +126,12 @@ export const CreatePriceCalendar = () => {
     );
   };
 
-  if (prices.isLoading) return <CalendarSkeleton />;
+  if (prices.isLoading)
+    return (
+      <div className="w-full">
+        <SimpleLoader />
+      </div>
+    );
 
   return (
     <div className="flex h-full w-full flex-col gap-4 p-2 text-gray-900">
@@ -143,9 +148,9 @@ export const CreatePriceCalendar = () => {
       </div>
       <div className="relative flex-grow overflow-auto">
         <table className="w-full table-fixed border-collapse">
-          <thead className="sticky top-0 z-20 bg-white text-[8px] sm:text-xs md:text-sm">
+          <thead className="sticky top-0 z-20 bg-primary text-white text-[8px] sm:text-xs md:text-sm">
             <tr className="flex">
-              <th className="sticky left-0 z-30 flex h-12 w-20 shrink-0 items-center justify-center border-[1px] bg-white sm:h-16 sm:w-24 md:h-20 md:w-32">
+              <th className="sticky left-0 z-30 flex h-12 w-20 shrink-0 items-center justify-center border-[1px]  sm:h-16 sm:w-24 md:h-20 md:w-32">
                 Rooms
               </th>
               {currentMonth.map((date, index) => (

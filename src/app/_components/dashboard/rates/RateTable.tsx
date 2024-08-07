@@ -14,7 +14,7 @@ import {
   getSortedRowModel,
   useReactTable,
 } from "@tanstack/react-table";
-import { PencilIcon, Plus, RefreshCw, SearchIcon } from "lucide-react";
+import { Plus, RefreshCw, SearchIcon } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Button } from "~/components/ui/button";
 import { Checkbox } from "~/components/ui/checkbox";
@@ -29,6 +29,15 @@ import {
 } from "~/components/ui/table";
 import { TableSkeleton } from "~/app/_components/dashboard/skeletons/TableSkeletion";
 import { DeleteRatesPopup } from "~/app/_components/dashboard/rates/DeleteRateDialog";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "~/components/ui/dropdown-menu";
+import { DotsHorizontalIcon } from "@radix-ui/react-icons";
 
 const columns: ColumnDef<RatePlanDetailProps>[] = [
   {
@@ -85,12 +94,24 @@ const columns: ColumnDef<RatePlanDetailProps>[] = [
     cell: ({ row }) => {
       const room = row.original;
       return (
-        <Button variant={"outline"} asChild>
-          <Link href={`rates/${room.ratePlanId}`}>
-            <PencilIcon className="mr-2 h-3 w-3" />
-            Edit
-          </Link>
-        </Button>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="ghost" className="h-8 w-8 p-0">
+              <span className="sr-only">Open menu</span>
+              <DotsHorizontalIcon className="h-4 w-4" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuLabel>Actions</DropdownMenuLabel>
+            <DropdownMenuItem asChild>
+              <Link href={`rates/${room.ratePlanId}`}>Edit plan</Link>
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem asChild>
+              <Link href={`rates/assign/${room.ratePlanId}`}>Assign plan to room</Link>
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       );
     },
   },

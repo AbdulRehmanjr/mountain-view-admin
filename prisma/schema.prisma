@@ -40,37 +40,63 @@ model Hotel {
 }
 
 model Room {
-  roomId       String        @id @default(uuid())
-  code         String        @default(uuid())
-  roomName     String        @default("none")
-  capacity     Int           @default(0)
-  area         Int           @default(0)
+  roomId       String         @id @default(uuid())
+  code         String         @default(uuid())
+  roomName     String         @default("none")
+  capacity     Int            @default(0)
+  area         Int            @default(0)
   features     String[]
-  description  String        @default("none")
-  roomType     String        @default("none")
-  dp           String        @default("none")
-  beds         Int           @default(0)
-  quantity     Int           @default(1)
-  price        Int           @default(1)
+  description  String         @default("none")
+  roomType     String         @default("none")
+  dp           String         @default("none")
+  beds         Int            @default(0)
+  quantity     Int            @default(1)
+  price        Int            @default(1)
   pictures     String[]
   hotelHotelId String
-  hotel        Hotel         @relation(fields: [hotelHotelId], references: [hotelId], onDelete: Cascade)
+  hotel        Hotel          @relation(fields: [hotelHotelId], references: [hotelId], onDelete: Cascade)
   RoomBooking  RoomBooking[]
   BlockDate    BlockDate[]
+  RoomRatePlan RoomRatePlan[]
 
   @@unique([code])
 }
 
 model RatePlan {
-  ratePlanId   String @id @default(uuid())
-  code         String @default(uuid())
-  name         String @default("none")
-  description  String @default("none")
-  mealId       Int    @default(15)
+  ratePlanId   String         @id @default(uuid())
+  code         String         @default(uuid())
+  name         String         @default("none")
+  description  String         @default("none")
+  mealId       Int            @default(15)
   hotelHotelId String
-  hotelId      Hotel  @relation(fields: [hotelHotelId], references: [hotelId])
+  hotelId      Hotel          @relation(fields: [hotelHotelId], references: [hotelId])
+  RoomRatePlan RoomRatePlan[]
 
   @@unique([code])
+}
+
+model RoomRatePlan {
+  rrpId     String      @id @default(uuid())
+  rateId    String
+  roomId    String
+  quantity  String      @default("none")
+  hotelName String      @default("none")
+  hotelId   String      @default("none")
+  room      Room        @relation(fields: [roomId], references: [roomId])
+  rate      RatePlan    @relation(fields: [rateId], references: [ratePlanId])
+  RoomPrice RoomPrice[]
+}
+
+model RoomPrice {
+  priceId      String       @id @default(uuid())
+  startDate    String       @default("none")
+  endDate      String       @default("none")
+  planCode     String       @default("none")
+  price        Int          @default(0)
+  rrpId        String
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @default(now()) @updatedAt
+  roomRatePlan RoomRatePlan @relation(fields: [rrpId], references: [rrpId])
 }
 
 model RoomBooking {
@@ -103,17 +129,6 @@ model BookingDetail {
   email           String        @default("none")
   arrivalTime     String        @default("none")
   RoomBooking     RoomBooking[]
-}
-
-model RoomPrice {
-  priceId   String   @id @default(uuid())
-  startDate String   @default("none")
-  endDate   String   @default("none")
-  roomId    String   @default("none")
-  planCode  String   @default("none")
-  price     Int      @default(0)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @default(now()) @updatedAt
 }
 
 model BlockDate {

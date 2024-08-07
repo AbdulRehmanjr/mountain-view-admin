@@ -2,7 +2,7 @@
 
 import { useForm } from "react-hook-form";
 import { api } from "~/trpc/react";
-import {useMemo, useState } from "react";
+import {useLayoutEffect, useState } from "react";
 import {CldUploadWidget} from "next-cloudinary";
 import { Input } from "~/components/ui/input";
 import { Textarea } from "~/components/ui/textarea";
@@ -85,7 +85,7 @@ export const EditRoomForm = ({ roomId }: { roomId: string }) => {
     resolver: zodResolver(formSchema),
   });
 
-  useMemo(() => {
+  useLayoutEffect(() => {
     const info = roomData.data;
     if (info) {
       form.setValue("roomName", info.roomName);
@@ -176,7 +176,7 @@ export const EditRoomForm = ({ roomId }: { roomId: string }) => {
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Hotel</FormLabel>
-                      <Select onValueChange={field.onChange} defaultValue={field.value}>
+                      <Select onValueChange={field.onChange} value={field.value ?? ''}>
                         <FormControl>
                           <SelectTrigger>
                             <SelectValue placeholder="Select the Hotel" />
@@ -252,7 +252,7 @@ export const EditRoomForm = ({ roomId }: { roomId: string }) => {
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Room Type</FormLabel>
-                      <Select onValueChange={field.onChange} defaultValue={field.value}>
+                      <Select onValueChange={field.onChange} value={field.value ?? ''}>
                         <FormControl>
                           <SelectTrigger>
                             <SelectValue placeholder="Select the type" />

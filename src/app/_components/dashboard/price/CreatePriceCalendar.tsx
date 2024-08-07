@@ -112,19 +112,44 @@ export const CreatePriceCalendar = () => {
   }) => {
     const isSelected = isInRange(date, roomId, planCode);
     const getPrice = (date: Dayjs): number => {
-      const priceEntryIndex = subPrices.findIndex((entry) => {
+      if (!dayjs.isDayjs(date) || !Array.isArray(subPrices)) {
+        return 0;
+      }
+
+      const validEntries = subPrices
+        .filter((entry) => {
+          if (
+            !entry.startDate ||
+            !entry.endDate ||
+            typeof entry.price !== "number"
+          ) {
+            console.warn("Invalid price entry:", entry);
+            return false;
+          }
+          const start = dayjs(entry.startDate);
+          const end = dayjs(entry.endDate);
+          if (start.isAfter(end)) {
+            console.warn("Invalid date range:", entry);
+            return false;
+          }
+          return true;
+        })
+        .sort((a, b) => {
+          const durationA = dayjs(a.endDate).diff(dayjs(a.startDate));
+          const durationB = dayjs(b.endDate).diff(dayjs(b.startDate));
+          return durationA - durationB;
+        });
+
+      for (const entry of validEntries) {
         const entryStartDate = dayjs(entry.startDate);
         const entryEndDate = dayjs(entry.endDate);
-        return (
-          date.isBetween(entryStartDate, entryEndDate, "day", "[]") ||
-          date.isSame(entryStartDate) ||
-          date.isSame(entryEndDate)
-        );
-      });
 
-      return priceEntryIndex !== -1
-        ? subPrices[priceEntryIndex]?.price ?? 0
-        : 0;
+        if (date.isBetween(entryStartDate, entryEndDate, "day", "[]")) {
+          return entry.price;
+        }
+      }
+
+      return 0;
     };
 
     const price = getPrice(date);
@@ -138,7 +163,7 @@ export const CreatePriceCalendar = () => {
           className,
         )}
         onClick={() =>
-          handleDateClick(date, roomId,  subRateId, planCode,hotelId)
+          handleDateClick(date, roomId, subRateId, planCode, hotelId)
         }
       >
         <span>{price ?? 0} €</span>

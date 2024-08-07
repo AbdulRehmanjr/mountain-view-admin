@@ -1,7 +1,6 @@
 import { createTRPCRouter, protectedProcedure } from "../trpc";
 import z from 'zod'
 import { TRPCClientError } from "@trpc/client";
-import dayjs from "dayjs";
 import axios, { AxiosError } from "axios";
 import { TRPCError } from "@trpc/server";
 import { env } from "~/env";
@@ -17,7 +16,6 @@ type Room = {
         code: string
     };
 }
-
 
 export const PriceRouter = createTRPCRouter({
 
@@ -106,15 +104,23 @@ export const PriceRouter = createTRPCRouter({
                 }
                 // eslint-disable-next-line @typescript-eslint/no-unused-vars
                 const { room, ...itemWithoutRoom } = item;
-                groupedByRoom[roomId].rates.push(itemWithoutRoom);
+                groupedByRoom[roomId]!.rates.push(itemWithoutRoom);
             });
-            return Object.values(groupedByRoom);
+            const data = Object.values(groupedByRoom);
+            return data
         } catch (error) {
-            console.error("Error in getAllPrices:", error);
+            if (error instanceof TRPCClientError) {
+                console.error(error.message)
+                throw new TRPCError({
+                    code: 'BAD_REQUEST',
+                    message: error.message
+                })
+            }
+            console.error(error)
             throw new TRPCError({
-                code: "INTERNAL_SERVER_ERROR",
-                message: "An unexpected error occurred",
-            });
+                code: 'NOT_FOUND',
+                message: "Something went wrong"
+            })
         }
     }),
 
@@ -175,15 +181,44 @@ export const PriceRouter = createTRPCRouter({
                         rateId: input.rateId,
                     }
                 })
-                await ctx.db.roomPrice.create({
-                    data: {
-                        rrpId: roomRatePlan?.rrpId ?? 'none',
-                        startDate: input.startDate,
-                        endDate: input.endDate,
-                        planCode: input.ratePlan,
-                        price: input.price,
+
+                const overlappingRecords = await ctx.db.roomPrice.findMany({
+                    where: {
+                        OR: [
+                            {
+                                startDate: { lte: input.endDate },
+                                endDate: { gte: input.startDate }
+                            }
+                        ]
                     }
                 });
+                let found = false
+                let priceId = ''
+                for (const overlappingRecord of overlappingRecords) {
+                    if (overlappingRecord.startDate === input.startDate && overlappingRecord.endDate === input.endDate) {
+                        found = true
+                        priceId = overlappingRecord.priceId
+                    }
+                }
+
+                if (found)
+                    await ctx.db.roomPrice.update({
+                        where: { priceId: priceId },
+                        data: {
+                            price: input.price,
+                        }
+                    });
+                else
+                    await ctx.db.roomPrice.create({
+                        data: {
+                            rrpId: roomRatePlan?.rrpId ?? 'none',
+                            startDate: input.startDate,
+                            endDate: input.endDate,
+                            planCode: input.ratePlan,
+                            price: input.price,
+                        }
+                    });
+
 
             } catch (error) {
                 if (error instanceof TRPCClientError) {

@@ -79,12 +79,14 @@ model RoomRatePlan {
   rrpId     String      @id @default(uuid())
   rateId    String
   roomId    String
-  quantity  String      @default("none")
+  quantity  Int         @default(0)
   hotelName String      @default("none")
   hotelId   String      @default("none")
   room      Room        @relation(fields: [roomId], references: [roomId])
   rate      RatePlan    @relation(fields: [rateId], references: [ratePlanId])
   RoomPrice RoomPrice[]
+
+  @@index([roomId, rateId])
 }
 
 model RoomPrice {

@@ -2,8 +2,6 @@
 
 import { useForm } from "react-hook-form";
 import { api } from "~/trpc/react";
-import { Input } from "~/components/ui/input";
-import { Textarea } from "~/components/ui/textarea";
 import { Button } from "~/components/ui/button";
 import { ReloadIcon } from "@radix-ui/react-icons";
 import { useToast } from "~/components/ui/use-toast";
@@ -32,13 +30,9 @@ import {
   SelectValue,
   SelectItem,
 } from "~/components/ui/select";
-import { useMemo } from "react";
 
 const formSchema = z.object({
-  rateName: z.string({ required_error: "Field is required" }),
-  hotelId: z.string({ required_error: "Field is required" }),
-  roomId: z.string({ required_error: "Field is required" }),
-  description: z.string({ required_error: "Field is required" }),
+  room: z.string({ required_error: "Field is required" }),
 });
 
 export const RateAssignForm = ({ rateId }: { rateId: string }) => {
@@ -47,14 +41,15 @@ export const RateAssignForm = ({ rateId }: { rateId: string }) => {
     resolver: zodResolver(formSchema),
   });
 
-  const rooms = api.room.getAllRoomsBySellerId.useQuery();
+  const rooms = api.rateplan.getAllRoomsBySellerId.useQuery({ rateId: rateId });
 
-  const editRatePlan = api.rateplan.updateRatePlan.useMutation({
-    onSuccess: () => {
+  const createRoomRate = api.rateplan.createRoomRatePlan.useMutation({
+    onSuccess: async () => {
       toast({
         title: "Success!",
         description: "Room added successfully.",
       });
+      await rooms.refetch();
       form.reset();
     },
     onError: () => {
@@ -67,9 +62,23 @@ export const RateAssignForm = ({ rateId }: { rateId: string }) => {
   });
 
   const formSubmitted = (data: z.infer<typeof formSchema>) => {
-    return;
+    const [roomId, quantity, hotelId, hotelName] = data.room.split("@");
+    if (roomId && quantity && hotelId && hotelName)
+      createRoomRate.mutate({
+        rateId: rateId,
+        roomId: roomId,
+        quantity: +quantity,
+        hotelId: hotelId,
+        hotelName: hotelName,
+      });
   };
 
+  if (rooms.data?.length == 0)
+    return (
+      <div className="w-full">
+        <strong className="text-red-600 text-2xl">This rate plan is assigned to all rooms</strong>
+      </div>
+    );
   return (
     <Form {...form}>
       <form
@@ -87,7 +96,7 @@ export const RateAssignForm = ({ rateId }: { rateId: string }) => {
             <CardContent className="space-y-4">
               <FormField
                 control={form.control}
-                name="roomId"
+                name="room"
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Select a room</FormLabel>
@@ -97,13 +106,13 @@ export const RateAssignForm = ({ rateId }: { rateId: string }) => {
                     >
                       <FormControl>
                         <SelectTrigger>
-                          <SelectValue placeholder="Select a room " />
+                          <SelectValue placeholder="Select a room" />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
                         {rooms.data?.map((room) => (
                           <SelectItem
-                            value={`${room.roomId}`}
+                            value={`${room.roomId}@${room.quantity}@${room.hotelHotelId}@${room.hotel.hotelName}`}
                             key={room.roomId}
                           >
                             {room.roomName}
@@ -116,14 +125,14 @@ export const RateAssignForm = ({ rateId }: { rateId: string }) => {
                 )}
               />
             </CardContent>
-            <CardFooter >
-              <div className="flex justify-center w-full">
+            <CardFooter>
+              <div className="flex w-full justify-center">
                 <Button
                   type="submit"
                   className="w-full max-w-md"
-                  disabled={editRatePlan.isLoading}
+                  disabled={createRoomRate.isLoading}
                 >
-                  {editRatePlan.isLoading ? (
+                  {createRoomRate.isLoading ? (
                     <>
                       <ReloadIcon className="mr-2 h-4 w-4 animate-spin" />
                       Creating...

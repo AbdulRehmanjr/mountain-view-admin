@@ -65,6 +65,7 @@ export const CreatePriceForm: React.FC<CreatePriceFormProps> = ({
       });
       setPriceDialog(false);
       setDateRange({
+        rateCode: "none",
         roomId: "none",
         hotelId: "none",
         subRateId: "none",
@@ -86,7 +87,7 @@ export const CreatePriceForm: React.FC<CreatePriceFormProps> = ({
     form.reset({
       startDate: dayjs(dateRange.startDate).format("YYYY-MM-DD"),
       endDate: dayjs(dateRange.endDate).format("YYYY-MM-DD"),
-      ratePlan: dateRange.subRateId,
+      ratePlan: dateRange.rateCode,
     });
   }, [dateRange, form]);
 
@@ -96,6 +97,7 @@ export const CreatePriceForm: React.FC<CreatePriceFormProps> = ({
       endDate: dayjs(data.endDate).format("YYYY-MM-DD"),
       roomId: dateRange.roomId,
       ratePlan: data.ratePlan,
+      rateId:dateRange.subRateId,
       price: data.price,
       hotelId: dateRange.hotelId,
     });

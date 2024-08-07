@@ -22,7 +22,7 @@ export const CreatePriceCalendar = () => {
   const [selectedDate, setSelectedDate] = useState<Dayjs>(dayjs());
   const weekdayNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
-  const prices = api.price.getAllPrices.useQuery();
+  const groupedRatePlans = api.price.getAllPrices.useQuery();
 
   const currentMonth: Dayjs[] = useMemo(() => {
     const currentMonth = selectedDate.clone().startOf("month");
@@ -34,8 +34,8 @@ export const CreatePriceCalendar = () => {
   }, [selectedDate]);
 
   const refetchData = useCallback(async () => {
-    await prices.refetch();
-  }, [prices]);
+    await groupedRatePlans.refetch();
+  }, [groupedRatePlans]);
 
   const handlePreviousMonth = () => {
     setSelectedDate((prevDate) => prevDate.clone().subtract(1, "month"));
@@ -49,10 +49,12 @@ export const CreatePriceCalendar = () => {
     date: Dayjs,
     roomId: string,
     subRateId: string,
+    planCode: string,
     hotelId: string,
   ) => {
-    if (dateRange.roomId !== roomId || dateRange.subRateId !== subRateId)
+    if (dateRange.roomId !== roomId || dateRange.rateCode !== planCode)
       setDateRange({
+        rateCode: planCode,
         roomId: roomId,
         subRateId: subRateId,
         hotelId: hotelId,
@@ -66,6 +68,7 @@ export const CreatePriceCalendar = () => {
       setDateRange({ ...dateRange, endDate: date });
     } else
       setDateRange({
+        rateCode: "none",
         roomId: "none",
         subRateId: "none",
         hotelId: "none",
@@ -74,10 +77,10 @@ export const CreatePriceCalendar = () => {
       });
   };
 
-  const isInRange = (date: Dayjs, roomId: string, subRateId: string) => {
+  const isInRange = (date: Dayjs, roomId: string, planCode: string) => {
     if (
       dateRange.roomId !== roomId ||
-      dateRange.subRateId !== subRateId ||
+      dateRange.rateCode !== planCode ||
       !dateRange.startDate ||
       !dateRange.endDate
     )
@@ -88,6 +91,7 @@ export const CreatePriceCalendar = () => {
   const DateTemplate = ({
     date,
     roomId,
+    planCode,
     subRateId,
     subPrices,
     hotelId,
@@ -95,38 +99,54 @@ export const CreatePriceCalendar = () => {
   }: {
     date: Dayjs;
     roomId: string;
+    planCode: string;
     subRateId: string;
     hotelId: string;
     subPrices: {
-      date: string;
+      startDate: string;
+      endDate: string;
       price: number;
+      planCode: string;
     }[];
     className?: string;
   }) => {
-    const isSelected = isInRange(date, roomId, subRateId);
+    const isSelected = isInRange(date, roomId, planCode);
     const getPrice = (date: Dayjs): number => {
-      const dateString = date.format("YYYY-MM-DD");
-      const priceEntry = subPrices.find((entry) => entry.date === dateString);
-      return priceEntry ? priceEntry.price : 0;
+      const priceEntryIndex = subPrices.findIndex((entry) => {
+        const entryStartDate = dayjs(entry.startDate);
+        const entryEndDate = dayjs(entry.endDate);
+        return (
+          date.isBetween(entryStartDate, entryEndDate, "day", "[]") ||
+          date.isSame(entryStartDate) ||
+          date.isSame(entryEndDate)
+        );
+      });
+
+      return priceEntryIndex !== -1
+        ? subPrices[priceEntryIndex]?.price ?? 0
+        : 0;
     };
 
     const price = getPrice(date);
 
     return (
-      <td
+      <button
+        type="button"
         className={cn(
           "flex flex-col items-center justify-center border-[1px] p-0.5 text-center text-[10px] hover:cursor-pointer sm:text-xs",
           isSelected && "bg-blue-600 text-white",
           className,
         )}
-        onClick={() => handleDateClick(date, roomId, subRateId, hotelId)}
+        onClick={() =>
+          handleDateClick(date, roomId,  subRateId, planCode,hotelId)
+        }
       >
         <span>{price ?? 0} €</span>
-      </td>
+      </button>
     );
   };
 
-  if (prices.isLoading)
+  if (groupedRatePlans.isLoading)
     return (
       <div className="w-full">
         <SimpleLoader />
@@ -146,74 +166,72 @@ export const CreatePriceCalendar = () => {
           Next
         </Button>
       </div>
-      <div className="relative flex-grow overflow-auto">
-        <table className="w-full table-fixed border-collapse">
-          <thead className="sticky top-0 z-20 bg-primary text-white text-[8px] sm:text-xs md:text-sm">
-            <tr className="flex">
-              <th className="sticky left-0 z-30 flex h-12 w-20 shrink-0 items-center justify-center border-[1px]  sm:h-16 sm:w-24 md:h-20 md:w-32">
-                Rooms
-              </th>
-              {currentMonth.map((date, index) => (
-                <th
-                  key={index}
-                  className="flex h-12 w-6 shrink-0 flex-col items-center justify-center border-[1px] sm:h-16 sm:w-8 md:h-20 md:w-[2.75rem]"
-                >
-                  <span>{weekdayNames[date.day()]}</span>
-                  <span>{date.date()}</span>
-                </th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {prices.data?.map((price, index) => (
-              <Collapsible key={index}>
-                <CollapsibleTrigger className="w-full">
-                  <tr className="flex">
-                    <td className="sticky left-0 z-10 flex h-12 w-20 shrink-0 items-center justify-between border-[1px] bg-white p-2 sm:h-16 sm:w-24 md:h-20 md:w-32">
-                      <span className="text-[8px] font-semibold sm:text-[10px] md:text-xs">
-                        {price.roomName}
-                      </span>
-                      <ChevronDown className="h-4 w-4" />
-                    </td>
-                    {currentMonth.map((date, index) => (
-                      <td
-                        key={index}
-                        className="flex h-12 w-6 shrink-0 items-center justify-center border-[1px] p-0.5 text-center text-[10px] hover:cursor-pointer sm:h-16 sm:w-8 sm:text-xs md:h-20 md:w-[2.75rem]"
-                      >
-                        {price.quantity}
-                      </td>
-                    ))}
-                  </tr>
-                </CollapsibleTrigger>
-                <CollapsibleContent>
-                  {price.ratePlans.map((subRate, index) => (
-                    <tr key={`${index}-${subRate.planCode}`} className="flex">
-                      <td className="sticky left-0 z-10 flex h-12 w-20 shrink-0 flex-col items-center justify-center border-[1px] bg-white p-2 sm:h-16 sm:w-24 md:h-20 md:w-32">
-                        <span className="text-[8px] sm:text-[10px] md:text-xs">
-                          {subRate.planName}
-                        </span>
-                        <span className="text-[6px] text-gray-500 sm:text-[8px] md:text-[10px]">
-                          {price.hotelName}
-                        </span>
-                      </td>
-                      {currentMonth.map((date, index) => (
-                        <DateTemplate
-                          subPrices={subRate.prices}
-                          hotelId={price.hotelId}
-                          date={date}
-                          roomId={price.roomId}
-                          subRateId={subRate.planCode}
-                          key={index}
-                          className="h-12 w-6 shrink-0 sm:h-16 sm:w-8 md:h-20 md:w-[2.75rem]"
-                        />
-                      ))}
-                    </tr>
+      <div className="relative flex flex-grow flex-col overflow-auto">
+        {/* Header Row */}
+        <div className="flex w-full bg-primary text-[8px] text-white sm:text-xs md:text-sm">
+          <div className="flex h-12 w-20 shrink-0 items-center justify-center border-[1px] sm:h-16 sm:w-24 md:h-20 md:w-32">
+            Rooms
+          </div>
+          {currentMonth.map((date, index) => (
+            <div
+              key={index}
+              className="flex h-12 w-6 shrink-0 flex-col items-center justify-center border-[1px] sm:h-16 sm:w-8 md:h-20 md:w-[2.75rem]"
+            >
+              <span>{weekdayNames[date.day()]}</span>
+              <span>{date.date()}</span>
+            </div>
+          ))}
+        </div>
+
+        {/* Content Rows */}
+        {groupedRatePlans.data?.map((groupedRatePlan, index) => (
+          <Collapsible key={index}>
+            <CollapsibleTrigger className="w-full" asChild>
+              <div className="flex">
+                <div className="flex h-12 w-20 shrink-0 items-center justify-between border-[1px] bg-white p-2 sm:h-16 sm:w-24 md:h-20 md:w-32">
+                  <span className="text-[8px] font-semibold sm:text-[10px] md:text-xs">
+                    {groupedRatePlan.roomName}
+                  </span>
+                  <ChevronDown className="h-4 w-4" />
+                </div>
+                {currentMonth.map((_, index) => (
+                  <div
+                    key={index}
+                    className="flex h-12 w-6 shrink-0 items-center justify-center border-[1px] p-0.5 text-center text-[10px] hover:cursor-pointer sm:h-16 sm:w-8 sm:text-xs md:h-20 md:w-[2.75rem]"
+                  >
+                    {groupedRatePlan.quantity}
+                  </div>
+                ))}
+              </div>
+            </CollapsibleTrigger>
+            <CollapsibleContent>
+              {groupedRatePlan.rates.map((ratePlan, index) => (
+                <div key={`${index}-${ratePlan.rrpId}`} className="flex">
+                  <div className="flex h-12 w-20 shrink-0 flex-col items-center justify-center border-[1px] bg-white p-2 sm:h-16 sm:w-24 md:h-20 md:w-32">
+                    <span className="text-[8px] sm:text-[10px] md:text-xs">
+                      {ratePlan.rate.name}
+                    </span>
+                    <span className="text-[6px] text-gray-500 sm:text-[8px] md:text-[10px]">
+                      {ratePlan.hotelName}
+                    </span>
+                  </div>
+                  {currentMonth.map((date, index) => (
+                    <DateTemplate
+                      planCode={ratePlan.rate.code}
+                      subPrices={ratePlan.RoomPrice}
+                      hotelId={ratePlan.hotelId}
+                      date={date}
+                      roomId={ratePlan.roomId}
+                      subRateId={ratePlan.rate.ratePlanId}
+                      key={index}
+                      className="h-12 w-6 shrink-0 sm:h-16 sm:w-8 md:h-20 md:w-[2.75rem]"
+                    />
                   ))}
-                </CollapsibleContent>
-              </Collapsible>
-            ))}
-          </tbody>
-        </table>
+                </div>
+              ))}
+            </CollapsibleContent>
+          </Collapsible>
+        ))}
       </div>
       <div className="hidden">
         <CreatePriceForm onSuccess={refetchData} />

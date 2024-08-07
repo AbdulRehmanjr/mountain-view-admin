@@ -63,9 +63,59 @@ type PriceProps = {
     priceId: string
     startDate: string
     endDate: string
+    planCode: string
     price: number
+    rrpId: string
+}
+
+type RatePriceProps = {
+    rrpId: string
+    rateId: string
     roomId: string
-    planCode:string
+    quantity: number
+    hotelName: string
+    hotelId: string
+    RoomPrice: {
+        startDate: string
+        endDate: string
+        price: number
+        planCode: string
+    }[]
+    room: {
+        roomId: string
+        roomName: string
+        quantity:number
+    }
+    rate: {
+        ratePlanId: string,
+        name: string,
+        code: string,
+    }
+}
+
+type GroupedRatePriceProps = {
+    roomId: string
+    roomName: string
+    quantity:number
+    rates: {
+            rrpId: string
+            rateId: string
+            roomId: string
+            quantity: number
+            hotelName: string
+            hotelId: string
+        RoomPrice: {
+            startDate: string
+            endDate: string
+            price: number
+            planCode: string
+        }[]
+        rate: {
+            ratePlanId: string,
+            name: string,
+            code: string,
+        }
+    }[]
 }
 
 type BookingProps = {
@@ -181,7 +231,7 @@ type RatePlanDetailProps = {
     hotelId: {
         hotelId: string
         code: string
-        hotelName:string
+        hotelName: string
         sellerInfoSellerId: string
     }
 }
@@ -255,7 +305,7 @@ type MyRentGroupProps = {
 type ResultEntry = {
     roomId: string;
     roomName: string;
-    quantity:number
+    quantity: number
     hotelName: string;
     hotelId: string;
     ratePlans: {

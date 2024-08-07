@@ -56,6 +56,7 @@ export const CalendarForm = ({
       setDateRange({ ...dateRange, endDate: date });
     else if (date.isSame(dateRange.startDate, "days"))
       setDateRange({
+        rateCode:'none',
         roomId: "none",
         hotelId: "none",
         subRateId: "none",

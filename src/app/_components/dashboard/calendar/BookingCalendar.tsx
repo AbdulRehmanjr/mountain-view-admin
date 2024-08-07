@@ -40,13 +40,13 @@ export const BookingCalendar = () => {
 
   const handleDateClick = (date: Dayjs, roomId: string) => {
     if (blockDate.roomId !== roomId)
-      setBlockDate({ roomId: roomId, hotelId:'none',subRateId:'none', startDate: date, endDate: date });
+      setBlockDate({ roomId: roomId, hotelId:'none',rateCode:'none',subRateId:'none', startDate: date, endDate: date });
     else if (blockDate.startDate === null)
       setBlockDate({ ...blockDate, startDate: date, endDate: date });
     else if (!date.isBefore(blockDate.startDate, "day")) {
       setBlockDate({ ...blockDate, endDate: date });
       setBlockDialog(true);
-    } else setBlockDate({ roomId: "none",hotelId:'none',subRateId:'none', startDate: null, endDate: null });
+    } else setBlockDate({ roomId: "none",hotelId:'none',rateCode:'none',subRateId:'none', startDate: null, endDate: null });
   };
 
   const isDateBooked = (

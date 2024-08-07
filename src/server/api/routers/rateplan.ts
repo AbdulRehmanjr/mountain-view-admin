@@ -49,7 +49,7 @@ export const RatePlanRouter = createTRPCRouter({
             try {
 
                 const hotels = await ctx.db.hotel.findMany({ where: { sellerInfoSellerId: ctx.session.user.sellerId } })
-                
+
                 const rateList: RatePlanDetailProps[] = []
                 for (const hotel of hotels) {
                     const rates: RatePlanDetailProps[] = await ctx.db.ratePlan.findMany({
@@ -309,4 +309,108 @@ export const RatePlanRouter = createTRPCRouter({
                 })
             }
         }),
+
+    getAllRoomsBySellerId: protectedProcedure
+        .input(z.object({ rateId: z.string() }))
+        .query(async ({ ctx, input }) => {
+            try {
+                const allRatePlans = await ctx.db.roomRatePlan.findMany({
+                    where: { rateId: input.rateId },
+                });
+
+                const hotels = await ctx.db.hotel.findMany({
+                    where: { sellerInfoSellerId: ctx.session.user.sellerId }
+                });
+
+                const assignedRoomIds = new Set(allRatePlans.map(rp => rp.roomId));
+                const unassignedRooms: {
+                    roomId: string, roomName: string, quantity: number, hotelHotelId: string, hotel: {
+                        hotelName: string;
+                    };
+                }[] = [];
+
+                for (const hotel of hotels) {
+                    const rooms = await ctx.db.room.findMany({
+                        where: { hotelHotelId: hotel.hotelId },
+                        select: {
+                            roomId: true,
+                            roomName: true,
+                            quantity: true,
+                            hotelHotelId: true,
+                            hotel: {
+                                select: {
+                                    hotelName: true
+                                }
+                            }
+                        }
+                    });
+
+                    const hotelUnassignedRooms = rooms.filter(room => !assignedRoomIds.has(room.roomId));
+                    unassignedRooms.push(...hotelUnassignedRooms);
+                }
+                return unassignedRooms
+            } catch (error) {
+                if (error instanceof TRPCClientError) {
+                    console.error(error.message)
+                    throw new TRPCError({
+                        code: 'BAD_REQUEST',
+                        message: error.message
+                    })
+                } else if (error instanceof TRPCError) {
+                    console.error(error.message)
+                    throw new TRPCError({
+                        code: 'NOT_FOUND',
+                        message: error.message
+                    })
+                }
+                console.error(error)
+                throw new TRPCError({
+                    code: 'NOT_FOUND',
+                    message: "Something went wrong"
+                })
+            }
+        }),
+
+    createRoomRatePlan: protectedProcedure
+        .input(z.object({
+            rateId: z.string(),
+            roomId: z.string(),
+            quantity: z.number(),
+            hotelName: z.string(),
+            hotelId: z.string(),
+        }))
+        .mutation(async ({ ctx, input }) => {
+            try {
+
+                await ctx.db.roomRatePlan.create({
+                    data: {
+                        rateId: input.rateId,
+                        roomId: input.roomId,
+                        quantity: input.quantity,
+                        hotelName: input.hotelName,
+                        hotelId: input.hotelId,
+                    }
+                })
+            } catch (error) {
+                if (error instanceof TRPCClientError) {
+                    console.error(error.message)
+                    throw new TRPCError({
+                        code: 'BAD_REQUEST',
+                        message: error.message
+                    })
+                } else if (error instanceof TRPCError) {
+                    console.error(error.message)
+                    throw new TRPCError({
+                        code: 'NOT_FOUND',
+                        message: error.message
+                    })
+                }
+                console.error(error)
+                throw new TRPCError({
+                    code: 'NOT_FOUND',
+                    message: "Something went wrong"
+                })
+            }
+        }),
+
 })

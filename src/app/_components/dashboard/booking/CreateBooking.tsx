@@ -454,7 +454,7 @@ export const BookingForm = () => {
           </CardHeader>
           <CardContent className="grid">
             <CalendarForm
-              pricesData={pricesData.data}
+              pricesData={[]}
               roomId={calendar.roomId}
               totalPeople={calendar.totalPeople}
             />

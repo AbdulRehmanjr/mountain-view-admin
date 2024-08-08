@@ -36,6 +36,7 @@ import {
 
 const formSchema = z.object({
   room: z.string({ required_error: "Field is required" }),
+  subRateId: z.string({ required_error: "Field is required" }),
   quantity: z.number({ required_error: "Field is required" }),
   adults: z.number({ required_error: "Field is required" }),
   children: z.optional(z.number({ required_error: "Field is required" })),
@@ -52,11 +53,21 @@ const formSchema = z.object({
 });
 
 export const BookingForm = () => {
-  const pricesData = api.price.getAllPrices.useQuery();
-  const rooms = api.room.getAllRoomsBySellerId.useQuery();
-
   const [roomQuantity, setQuantity] = useState<number>(0);
-  const { dateRange, calendar, setCalendar, resetStore } = useHotelAdmin();
+  const { calendar, setCalendar, resetStore } = useHotelAdmin();
+
+  const pricesData = api.price.getPricesWithRateIdAndRoomId.useQuery(
+    {
+      roomId: calendar.roomId,
+      rateId: calendar.subRateId,
+    },
+    { enabled: false },
+  );
+  const rooms = api.room.getAllRoomsBySellerId.useQuery();
+  const rate = api.rateplan.getRoomRatePlanByRoomId.useQuery(
+    { roomId: calendar.roomId },
+    { enabled: false },
+  );
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -69,21 +80,29 @@ export const BookingForm = () => {
   });
 
   useMemo(() => {
-    const roomData = rooms.data?.find(
-      (room) => room.roomName === calendar.roomType,
-    );
-    if (roomData) setQuantity(roomData.quantity);
-  }, [calendar.roomType, rooms.data]);
+    if (rate.data) {
+      const rateFilter = rate.data?.find(
+        (data) => data.rateId == calendar.subRateId,
+      );
+      if (rateFilter) setQuantity(rateFilter.quantity);
+    }
+  }, [calendar.subRateId, rate.data]);
 
   const calculatePriceSum = (startDate: Dayjs, endDate: Dayjs) => {
     const allDates: string[] = getAllDatesBetween(startDate, endDate);
-    const price = extractPricesForDates(allDates, [], calendar.totalPeople);
+    const price = extractPricesForDates(
+      allDates,
+      pricesData.data,
+      calendar.totalPeople,
+    );
     return price;
   };
 
   const formSubmited = (data: z.infer<typeof formSchema>) => {
-    if (dateRange.endDate == null || dateRange.startDate == null) return;
-    const price = calculatePriceSum(dateRange.startDate, dateRange.endDate);
+    if (calendar.endDate == null || calendar.startDate == null) return;
+    const price =
+      calculatePriceSum(calendar.startDate, calendar.endDate) *
+      calendar.quantity;
     createBooking.mutate({
       adults: data.adults,
       children: data.children ?? 0,
@@ -94,9 +113,10 @@ export const BookingForm = () => {
       phone: data.phone,
       city: data.city,
       country: data.country,
+      quantity: calendar.quantity,
       type: "manual",
-      startDate: dayjs(dateRange.startDate).format("YYYY-MM-DD"),
-      endDate: dayjs(dateRange.endDate).format("YYYY-MM-DD"),
+      startDate: dayjs(calendar.startDate).format("YYYY-MM-DD"),
+      endDate: dayjs(calendar.endDate).format("YYYY-MM-DD"),
       arrivalTime: data.arrivalTime ?? "none",
       postalCode: data.postalCode,
       streetName: data.address,
@@ -222,32 +242,63 @@ export const BookingForm = () => {
               name="room"
               render={({ field }) => (
                 <FormItem>
+                  <FormLabel>Select room</FormLabel>
+                  <Select
+                    value={field.value ?? ""}
+                    onValueChange={async (value) => {
+                      field.onChange(value);
+                      setCalendar({
+                        ...calendar,
+                        roomId: value ?? "none",
+                      });
+                      await rate.refetch();
+                    }}
+                  >
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select a room" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      {rooms.data?.map((room) => (
+                        <SelectItem key={room.roomId} value={room.roomId}>
+                          {room.roomName}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="subRateId"
+              render={({ field }) => (
+                <FormItem>
                   <FormLabel>Select room type</FormLabel>
                   <Select
-                    defaultValue={field.value ?? ""}
                     value={field.value ?? ""}
                     onValueChange={(value) => {
                       field.onChange(value);
-                      const spliting = value.split("_");
                       setCalendar({
                         ...calendar,
-                        roomType: spliting[0] ?? "none",
-                        roomId: spliting[1] ?? "none",
+                        subRateId: value ?? "none",
                       });
                     }}
                   >
                     <FormControl>
                       <SelectTrigger>
-                        <SelectValue placeholder="Select a room type" />
+                        <SelectValue placeholder="Select a room" />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      {rooms.data?.map((room, index) => (
+                      {rate.data?.map((data) => (
                         <SelectItem
-                          key={index}
-                          value={`${room.roomName}_${room.roomId}`}
+                          key={data.rrpId}
+                          value={data.rate.ratePlanId}
                         >
-                          {room.roomName}
+                          {data.rate.name}
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -263,7 +314,15 @@ export const BookingForm = () => {
                 <FormItem>
                   <FormLabel>Room Quantity</FormLabel>
                   <Select
-                    onValueChange={(value) => field.onChange(parseInt(value))}
+                    onValueChange={async (value) => {
+                      const data = parseInt(value);
+                      field.onChange(data);
+                      setCalendar({
+                        ...calendar,
+                        quantity: data ?? 0,
+                      });
+                      await pricesData.refetch();
+                    }}
                   >
                     <FormControl>
                       <SelectTrigger>
@@ -454,8 +513,7 @@ export const BookingForm = () => {
           </CardHeader>
           <CardContent className="grid">
             <CalendarForm
-              pricesData={[]}
-              roomId={calendar.roomId}
+              pricesData={pricesData.data}
               totalPeople={calendar.totalPeople}
             />
           </CardContent>

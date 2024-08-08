@@ -33,6 +33,54 @@ export const PriceRouter = createTRPCRouter({
             }
         }),
 
+    getPricesWithRateIdAndRoomId: protectedProcedure
+        .input(z.object({
+            roomId: z.string(),
+            rateId: z.string()
+        }))
+        .query(async ({ ctx, input }): Promise<FilteredPricesProps> => {
+            try {
+
+                const roomRatePlans: FilteredPricesProps | null = await ctx.db.roomRatePlan.findFirst({
+                    where: {
+                        AND: {
+                            roomId: input.roomId,
+                            rateId: input.rateId
+                        }
+                    },
+                    include: {
+                        RoomPrice: {
+                            select: {
+                                startDate: true,
+                                endDate: true,
+                                planCode: true,
+                                price: true,
+                            }
+                        }
+                    }
+                })
+
+                if (!roomRatePlans) throw new TRPCError({
+                    code: 'NOT_FOUND',
+                    message: 'Not found'
+                })
+                return roomRatePlans
+            } catch (error) {
+                if (error instanceof TRPCClientError) {
+                    console.error(error.message)
+                    throw new TRPCError({
+                        code: 'BAD_REQUEST',
+                        message: error.message
+                    })
+                }
+                console.error(error)
+                throw new TRPCError({
+                    code: 'NOT_FOUND',
+                    message: "Something went wrong"
+                })
+            }
+        }),
+
     getAllPrices: protectedProcedure.query(async ({ ctx }): Promise<GroupedRatePriceProps[]> => {
         try {
             const hotels = await ctx.db.hotel.findMany({ where: { sellerInfoSellerId: ctx.session.user.sellerId } });

@@ -70,6 +70,7 @@ const mealPlanTypes: MealPlanType[] = [
 ];
 
 export const RateEditForm = ({ rateId }: { rateId: string }) => {
+  
   const { toast } = useToast();
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),

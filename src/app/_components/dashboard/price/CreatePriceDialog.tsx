@@ -34,10 +34,19 @@ import {
   SelectTrigger,
   SelectValue,
 } from "~/components/ui/select";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "~/components/ui/popover";
+import { cn } from "~/lib/utils";
+import { format } from "date-fns";
+import { CalendarIcon } from "lucide-react";
+import { Calendar } from "~/components/ui/calendar";
 
 const formSchema = z.object({
-  startDate: z.string({ required_error: "Field is required" }),
-  endDate: z.string({ required_error: "Field is required" }),
+  startDate: z.date({ required_error: "Field is required" }),
+  endDate: z.date({ required_error: "Field is required" }),
   ratePlan: z.string({ required_error: "Field is required" }),
   price: z.number({ required_error: "Field is required" }),
 });
@@ -84,11 +93,9 @@ export const CreatePriceForm: React.FC<CreatePriceFormProps> = ({
   });
 
   useEffect(() => {
-    form.reset({
-      startDate: dayjs(dateRange.startDate).format("YYYY-MM-DD"),
-      endDate: dayjs(dateRange.endDate).format("YYYY-MM-DD"),
-      ratePlan: dateRange.rateCode,
-    });
+    form.setValue('startDate',dayjs(dateRange.startDate ?? new Date()).toDate())
+    form.setValue('endDate',dayjs(dateRange.endDate ?? new Date()).toDate())
+    form.setValue('ratePlan',dateRange.rateCode)
   }, [dateRange, form]);
 
   const formSubmitted = (data: z.infer<typeof formSchema>) => {
@@ -97,7 +104,7 @@ export const CreatePriceForm: React.FC<CreatePriceFormProps> = ({
       endDate: dayjs(data.endDate).format("YYYY-MM-DD"),
       roomId: dateRange.roomId,
       ratePlan: data.ratePlan,
-      rateId:dateRange.subRateId,
+      rateId: dateRange.subRateId,
       price: data.price,
       hotelId: dateRange.hotelId,
     });
@@ -124,26 +131,37 @@ export const CreatePriceForm: React.FC<CreatePriceFormProps> = ({
               control={form.control}
               name="startDate"
               render={({ field }) => (
-                <FormItem>
+                <FormItem className="flex flex-col">
                   <FormLabel>Start date</FormLabel>
-                  <FormControl>
-                    <Input
-                      placeholder="YYYY-MM-DD"
-                      {...field}
-                      value={field.value ?? ""}
-                      onChange={(e) => {
-                        const value = e.target.value;
-                        if (
-                          value === "" ||
-                          (/^\d+$/.test(value) && parseInt(value) > 0)
-                        ) {
-                          field.onChange(
-                            value === "" ? undefined : parseInt(value),
-                          );
-                        }
-                      }}
-                    />
-                  </FormControl>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <FormControl>
+                        <Button
+                          variant={"outline"}
+                          className={cn(
+                            "w-[240px] pl-3 text-left font-normal",
+                            !field.value && "text-muted-foreground",
+                          )}
+                        >
+                          {field.value ? (
+                            format(field.value, "PPP")
+                          ) : (
+                            <span>Pick a date</span>
+                          )}
+                          <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                        </Button>
+                      </FormControl>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0" align="start">
+                      <Calendar
+                        mode="single"
+                        selected={field.value}
+                        onSelect={field.onChange}
+                        disabled={(date) => date < new Date("1900-01-01")}
+                        initialFocus
+                      />
+                    </PopoverContent>
+                  </Popover>
                   <FormMessage />
                 </FormItem>
               )}
@@ -152,15 +170,37 @@ export const CreatePriceForm: React.FC<CreatePriceFormProps> = ({
               control={form.control}
               name="endDate"
               render={({ field }) => (
-                <FormItem>
+                <FormItem className="flex flex-col">
                   <FormLabel>End date</FormLabel>
-                  <FormControl>
-                    <Input
-                      placeholder="YYYY-MM-DD"
-                      {...field}
-                      value={field.value ?? ""}
-                    />
-                  </FormControl>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <FormControl>
+                        <Button
+                          variant={"outline"}
+                          className={cn(
+                            "w-[240px] pl-3 text-left font-normal",
+                            !field.value && "text-muted-foreground",
+                          )}
+                        >
+                          {field.value ? (
+                            format(field.value, "PPP")
+                          ) : (
+                            <span>Pick a date</span>
+                          )}
+                          <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                        </Button>
+                      </FormControl>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0" align="start">
+                      <Calendar
+                        mode="single"
+                        selected={field.value}
+                        onSelect={field.onChange}
+                        disabled={(date) => date < new Date("1900-01-01")}
+                        initialFocus
+                      />
+                    </PopoverContent>
+                  </Popover>
                   <FormMessage />
                 </FormItem>
               )}

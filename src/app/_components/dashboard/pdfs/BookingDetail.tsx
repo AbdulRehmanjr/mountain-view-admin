@@ -5,19 +5,8 @@ import {
   View,
   StyleSheet,
   Image,
-  Font,
 } from "@react-pdf/renderer";
 import dayjs from "dayjs";
-
-Font.register({
-  family: "Avenir",
-  fonts: [{ src: "/fonts/AvenirCondensedHand.ttf", fontWeight: 700 }],
-});
-
-Font.register({
-  family: "Oranienbaum",
-  fonts: [{ src: "/fonts/Oranienbaum.ttf", fontWeight: 300 }],
-});
 
 const styles = StyleSheet.create({
   headerInfo: {
@@ -25,16 +14,17 @@ const styles = StyleSheet.create({
     flexDirection: "column",
     gap: "1rem",
     fontSize: "12px",
-    fontFamily: "Avenir",
+    fontFamily: "Helvetica",
   },
   headerTitle: {
-   fontWeight:'bold'
+    fontWeight: 'bold',
+    fontFamily: "Times-Roman",
   },
   page: {
     flexDirection: "column",
     backgroundColor: "#FFFFFF",
     padding: 30,
-    fontFamily: "Avenir",
+    fontFamily: "Helvetica",
   },
   header: {
     flexDirection: "row",
@@ -51,7 +41,7 @@ const styles = StyleSheet.create({
     fontSize: 24,
     fontWeight: "bold",
     color: "#333",
-    fontFamily: "Oranienbaum",
+    fontFamily: "Times-Roman",
   },
   invoiceRow: {
     flexDirection: "row",
@@ -65,7 +55,7 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontWeight: "bold",
     marginBottom: 5,
-    fontFamily: "Oranienbaum",
+    fontFamily: "Times-Roman",
   },
   invoiceBox: {
     display: "flex",
@@ -97,7 +87,7 @@ const styles = StyleSheet.create({
   tableHeader: {
     backgroundColor: "#f0f0f0",
     fontWeight: "bold",
-    fontFamily: "Oranienbaum",
+    fontFamily: "Helvetica-Bold",
   },
   footer: {
     position: "absolute",
@@ -137,7 +127,7 @@ const styles = StyleSheet.create({
     fontSize: 13,
     marginBottom: 3,
     fontWeight: "bold",
-    fontFamily: "Oranienbaum",
+    fontFamily: "Times-Roman",
   },
   taxSection: {
     display: "flex",
@@ -166,10 +156,10 @@ type PdfProps = {
 };
 
 export const BookingInvoicePDF = ({ bookingDetail }: PdfProps) => {
-  const taxRate = 10; // Assuming 10% tax rate
-  const taxAmount = 2000 * (taxRate / 100);
-  const environmentalLevy = 5; // Assuming 5 SCR environmental levy
-  const totalAmount = 2000 + taxAmount + environmentalLevy;
+  const taxRate = 10; 
+  const taxAmount = bookingDetail.price * (taxRate / 100);
+  const environmentalLevy = 5; 
+  const totalAmount = bookingDetail.price + taxAmount + environmentalLevy;
 
   return (
     <Document>
@@ -240,7 +230,7 @@ export const BookingInvoicePDF = ({ bookingDetail }: PdfProps) => {
               </Text>
             </View>
             <View style={styles.tableCol}>
-              <Text style={styles.tableCell}>3</Text>
+              <Text style={styles.tableCell}>{bookingDetail.bookingDetails.quantity}</Text>
             </View>
             <View style={styles.tableCol}>
               <Text style={styles.tableCell}>{bookingDetail.price} €</Text>

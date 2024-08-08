@@ -1,4 +1,4 @@
-"use client";
+
 import {
   Document,
   Page,
@@ -8,6 +8,7 @@ import {
   StyleSheet,
   Font,
 } from "@react-pdf/renderer";
+import dayjs from "dayjs";
 
 // Register a custom font (you'd need to provide the actual font file)
 Font.register({
@@ -87,41 +88,19 @@ const styles = StyleSheet.create({
   },
 });
 
-const guestData = {
-  name: "John Doe",
-  dob: "1990-01-01",
-  bookingSource: "Online",
-  email: "john@example.com",
-  phone: "+1234567890",
-  address: "123 Main St",
-  postalCode: "12345",
-  city: "Anytown",
-  country: "USA",
-  nationality: "American",
-  passportNumber: "AB1234567",
-  passportExpiry: "2025-12-31",
-  arrivalDate: "2023-08-01",
-  departureDate: "2023-08-05",
-  totalNights: "4",
-  roomCategory: "Deluxe",
-  roomNumber: "301",
+type PdfProps = {
+  bookingDetail: BookingDetailProps;
 };
 
-const hotelInfo = {
-  name: "Mountain View Hotel",
-  address: "456 Mountain Road, Scenic City, 67890",
-  phone: "+1 (234) 567-8901",
-};
-
-export const GuestRegistrationPDF = () => (
+export const GuestRegistrationPDF = ({ bookingDetail }: PdfProps) => (
   <Document>
     <Page size="A4" style={styles.page}>
       <View style={styles.headerInfo}>
         <Text style={styles.headerTitle}>
-          {String(hotelInfo.name).toUpperCase()}
+          {String(bookingDetail.Room.hotel.hotelName).toUpperCase()}
         </Text>
-        <Text>{hotelInfo.address}</Text>
-        <Text>{hotelInfo.phone}</Text>
+        <Text>{bookingDetail.Room.hotel.island}</Text>
+        <Text>{bookingDetail.Room.hotel.phone}</Text>
       </View>
       <View style={styles.header}>
         {/* eslint-disable-next-line jsx-a11y/alt-text */}
@@ -138,7 +117,7 @@ export const GuestRegistrationPDF = () => (
         <View style={styles.column}>
           <View style={styles.row}>
             <Text style={styles.label}>Full name:</Text>
-            <Text style={styles.value}>{guestData.name}</Text>
+            <Text style={styles.value}>{bookingDetail.bookingDetails.fullName}</Text>
           </View>
 
           <View style={styles.row}>
@@ -153,7 +132,7 @@ export const GuestRegistrationPDF = () => (
 
           <View style={styles.row}>
             <Text style={styles.label}>Post code</Text>
-            <Text style={styles.value}>52200</Text>
+            <Text style={styles.value}>{bookingDetail.bookingDetails.postalCode}</Text>
           </View>
 
           <View style={styles.row}>
@@ -169,27 +148,27 @@ export const GuestRegistrationPDF = () => (
         <View style={styles.column}>
           <View style={styles.row}>
             <Text style={styles.label}>Email:</Text>
-            <Text style={styles.value}>abdulrehman2020white@gmail.com</Text>
+            <Text style={styles.value}>{bookingDetail.bookingDetails.email}</Text>
           </View>
 
           <View style={styles.row}>
             <Text style={styles.label}>Phone:</Text>
-            <Text style={styles.value}>+92 3301486671</Text>
+            <Text style={styles.value}>{bookingDetail.bookingDetails.phone}</Text>
           </View>
 
           <View style={styles.row}>
             <Text style={styles.label}>Address:</Text>
-            <Text style={styles.value}>Ghakhar mandi, Gt road</Text>
+            <Text style={styles.value}>{bookingDetail.bookingDetails.address}</Text>
           </View>
 
           <View style={styles.row}>
             <Text style={styles.label}>City</Text>
-            <Text style={styles.value}>Ghakhar mandi</Text>
+            <Text style={styles.value}>{bookingDetail.bookingDetails.city}</Text>
           </View>
 
           <View style={styles.row}>
             <Text style={styles.label}>Country:</Text>
-            <Text style={styles.value}>Pakistan</Text>
+            <Text style={styles.value}>{bookingDetail.bookingDetails.country}</Text>
           </View>
 
           <View style={styles.row}>
@@ -203,34 +182,34 @@ export const GuestRegistrationPDF = () => (
         <View style={styles.column}>
           <View style={styles.row}>
             <Text style={styles.label}>Date of arrival:</Text>
-            <Text style={styles.value}>20-02-2023</Text>
+            <Text style={styles.value}></Text>
           </View>
 
           <View style={styles.row}>
             <Text style={styles.label}>Total nights:</Text>
-            <Text style={styles.value}>5</Text>
+            <Text style={styles.value}>{dayjs(bookingDetail.endDate).diff(dayjs(bookingDetail.startDate),'day')}</Text>
           </View>
 
           <View style={styles.row}>
             <Text style={styles.label}>Booking source:</Text>
-            <Text style={styles.value}>manual</Text>
+            <Text style={styles.value}></Text>
           </View>
 
           <View style={styles.row}>
             <Text style={styles.label}>Meal plan:</Text>
-            <Text style={styles.value}>{guestData.email}</Text>
+            <Text style={styles.value}></Text>
           </View>
         </View>
 
         <View style={styles.column}>
           <View style={styles.row}>
             <Text style={styles.label}>Date of departure:</Text>
-            <Text style={styles.value}>20-04-2025</Text>
+            <Text style={styles.value}>{dayjs(bookingDetail.endDate).format('DD-MM-YYYY')}</Text>
           </View>
 
           <View style={styles.row}>
             <Text style={styles.label}>Room Category:</Text>
-            <Text style={styles.value}>Deluxe</Text>
+            <Text style={styles.value}>{bookingDetail.Room.roomType}</Text>
           </View>
 
           <View style={styles.row}>
@@ -240,7 +219,7 @@ export const GuestRegistrationPDF = () => (
 
           <View style={styles.row}>
             <Text style={styles.label}>Additional information:</Text>
-            <Text style={styles.value}>Nothing</Text>
+            <Text style={styles.value}></Text>
           </View>
         </View>
       </View>
@@ -248,17 +227,17 @@ export const GuestRegistrationPDF = () => (
         <View style={styles.column}>
           <View style={styles.row}>
             <Text style={styles.label}>Total amount:</Text>
-            <Text style={styles.value}>1000</Text>
+            <Text style={styles.value}>{bookingDetail.price} €</Text>
           </View>
           <View style={styles.row}>
             <Text style={styles.label}>Payment status:</Text>
-            <Text style={styles.value}>Paid</Text>
+            <Text style={styles.value}>{bookingDetail.type}</Text>
           </View>
         </View>
         <View style={styles.column}>
           <View style={styles.row}>
-            <Text style={styles.label}> Environment levy:</Text>
-            <Text style={styles.value}>1000</Text>
+            <Text style={styles.label}>Environment levy:</Text>
+            <Text style={styles.value}>150 €</Text>
           </View>
         </View>
       </View>
@@ -266,7 +245,7 @@ export const GuestRegistrationPDF = () => (
       <View style={styles.signature}>
         <Text style={styles.signatureText}>
           By signing below you agree to all of the terms and conditions of{" "}
-          {hotelInfo.name}. Please consult our team at the front desk or our
+          {bookingDetail.Room.hotel.hotelName}. Please consult our team at the front desk or our
           website for the full terms and conditions.
         </Text>
         <View style={styles.columns}>
@@ -279,7 +258,7 @@ export const GuestRegistrationPDF = () => (
           <View style={styles.column}>
             <View style={styles.row}>
               <Text style={styles.label}>Date:</Text>
-              <Text style={styles.value}></Text>
+              <Text style={styles.value}>{dayjs(new Date).format('DD-MM-YYYY')}</Text>
             </View>
           </View>
         </View>

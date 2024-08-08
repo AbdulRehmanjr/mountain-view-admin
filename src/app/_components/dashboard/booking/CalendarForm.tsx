@@ -5,17 +5,16 @@ import dayjs, { type Dayjs } from "dayjs";
 import { useHotelAdmin } from "~/utils/store";
 import { cn } from "~/lib/utils";
 import { Button } from "~/components/ui/button";
+import { isBetween } from "~/utils";
 
 export const CalendarForm = ({
   pricesData,
-  roomId,
   totalPeople,
 }: {
-  pricesData: ResultEntry[] | undefined;
-  roomId: string;
+  pricesData: FilteredPricesProps | undefined;
   totalPeople: number;
 }) => {
-  const { dateRange, setDateRange } = useHotelAdmin();
+  const { calendar, setCalendar } = useHotelAdmin();
   const [selectedDate, setSelectedDate] = useState<Dayjs>(dayjs());
 
   const currentMonth: Dayjs[][] = useMemo(() => {
@@ -47,46 +46,49 @@ export const CalendarForm = ({
   };
 
   const handleDateChange = (date: Dayjs) => {
-    if (dateRange.startDate == null)
-      setDateRange({ ...dateRange, startDate: date });
+    if (calendar.startDate == null)
+      setCalendar({ ...calendar, startDate: date });
     else if (
-      dateRange.endDate == null &&
-      !date.isSame(dateRange.startDate, "days")
+      calendar.endDate == null &&
+      !date.isSame(calendar.startDate, "days")
     )
-      setDateRange({ ...dateRange, endDate: date });
-    else if (date.isSame(dateRange.startDate, "days"))
-      setDateRange({
-        rateCode:'none',
+      setCalendar({ ...calendar, endDate: date });
+    else if (date.isSame(calendar.startDate, "days"))
+      setCalendar({
+        totalPeople: 0,
+        roomType: "none",
         roomId: "none",
-        hotelId: "none",
         subRateId: "none",
+        quantity: 0,
         startDate: null,
         endDate: null,
       });
   };
 
-  const isBetween = (
-    checkDate: Dayjs,
-    startDate: Dayjs | null,
-    endDate: Dayjs | null,
-  ) =>
-    checkDate.isSame(startDate, "days") ||
-    checkDate.isSame(endDate, "days") ||
-    (checkDate.isAfter(startDate, "days") &&
-      checkDate.isBefore(endDate, "days"));
 
   const DateTemplate = ({ date }: { date: Dayjs }) => {
     if (!date) return <td className="relative border p-1 md:p-2"></td>;
 
     const isPast = date.isBefore(dayjs(), "day");
-    const isSelected = isBetween(date, dateRange.startDate, dateRange.endDate);
+    const isSelected = isBetween(date, calendar.startDate, calendar.endDate);
 
     const calculatePrice = (priceEntry: number, incrementPercentage: number) =>
       totalPeople > 3
         ? priceEntry + priceEntry * (incrementPercentage / 100)
         : priceEntry;
 
-    const price = 0;
+    const getPrice = (date: Dayjs): number => {
+      if (pricesData) {
+        const priceEntry = pricesData.RoomPrice.find((data) =>
+          isBetween(date, dayjs(data.startDate), dayjs(data.endDate)),
+        );
+
+        return priceEntry ? calculatePrice(priceEntry.price, 10) : 0;
+      }
+      return 0;
+    };
+
+    const price = getPrice(date);
 
     return (
       <td className="relative border p-1 md:p-2">

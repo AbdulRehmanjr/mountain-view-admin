@@ -84,7 +84,7 @@ type RatePriceProps = {
     room: {
         roomId: string
         roomName: string
-        quantity:number
+        quantity: number
     }
     rate: {
         ratePlanId: string,
@@ -96,14 +96,14 @@ type RatePriceProps = {
 type GroupedRatePriceProps = {
     roomId: string
     roomName: string
-    quantity:number
+    quantity: number
     rates: {
-            rrpId: string
-            rateId: string
-            roomId: string
-            quantity: number
-            hotelName: string
-            hotelId: string
+        rrpId: string
+        rateId: string
+        roomId: string
+        quantity: number
+        hotelName: string
+        hotelId: string
         RoomPrice: {
             startDate: string
             endDate: string
@@ -118,8 +118,22 @@ type GroupedRatePriceProps = {
     }[]
 }
 
-type BookingProps = {
+type FilteredPricesProps = {
+    rrpId: string;
+    rateId: string;
+    roomId: string;
+    quantity: number;
+    hotelName: string;
+    hotelId: string;
+    RoomPrice: {
+        startDate: string;
+        endDate: string;
+        price: number;
+        planCode: string;
+    }[];
+}
 
+type BookingProps = {
     bookingId: string
     startDate: string
     endDate: string
@@ -139,6 +153,7 @@ type BookingInfoProps = {
     adults: number
     children: number
     kids: number
+    quantity:number
     city: string
     country: string
     phone: string
@@ -156,6 +171,7 @@ type BookingDetailProps = {
     endDate: string
     price: number
     isRefund: boolean
+    type:string
     payPalInfoId: string
     roomRoomId: string
     bookingDetailId: string
@@ -164,6 +180,7 @@ type BookingDetailProps = {
         adults: number
         children: number
         kids: number
+        quantity: number
         city: string
         country: string
         phone: string

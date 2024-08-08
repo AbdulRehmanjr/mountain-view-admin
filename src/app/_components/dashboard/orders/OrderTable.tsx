@@ -29,7 +29,19 @@ import {
   TableRow,
 } from "~/components/ui/table";
 import { TableSkeleton } from "~/app/_components/dashboard/skeletons/TableSkeletion";
-import { PdfButton } from "./PdfButton";
+import { PdfButton } from "~/app/_components/dashboard/orders/PdfButton";
+import { RegisterPdfButton } from "~/app/_components/dashboard/orders//RegisterFormButton";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "~/components/ui/dropdown-menu";
+import { DotsHorizontalIcon } from "@radix-ui/react-icons";
+import dayjs from "dayjs";
+
 
 const columns: ColumnDef<BookingDetailProps>[] = [
   {
@@ -57,12 +69,12 @@ const columns: ColumnDef<BookingDetailProps>[] = [
   {
     accessorKey: "startDate",
     header: "Start Date",
-    cell: ({ row }) => <div>{row.getValue("startDate")}</div>,
+    cell: ({ row }) => <div>{dayjs(row.getValue("startDate")).format('DD-MM-YYYY')}</div>,
   },
   {
     accessorKey: "endDate",
     header: "End Date",
-    cell: ({ row }) => <div>{row.getValue("endDate")}</div>,
+    cell: ({ row }) => <div>{dayjs(row.getValue("endDate")).format('DD-MM-YYYY')}</div>,
   },
   {
     accessorKey: "Room.roomName",
@@ -90,6 +102,11 @@ const columns: ColumnDef<BookingDetailProps>[] = [
     cell: ({ row }) => <div>${row.getValue("price")}</div>,
   },
   {
+    accessorKey: "type",
+    header: "Type",
+    cell: ({ row }) => <div>{row.getValue("type")}</div>,
+  },
+  {
     accessorKey: "isRefund",
     header: "Refund Status",
     cell: ({ row }) => (
@@ -107,7 +124,26 @@ const columns: ColumnDef<BookingDetailProps>[] = [
     enableHiding: false,
     cell: ({ row }) => {
       const booking = row.original;
-      return <PdfButton booking={booking}/>;
+      return (
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="ghost" className="h-8 w-8 p-0">
+              <span className="sr-only">Open menu</span>
+              <DotsHorizontalIcon className="h-4 w-4" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuLabel>Actions</DropdownMenuLabel>
+            <DropdownMenuItem asChild>
+              <PdfButton booking={booking} />
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem asChild>
+              <RegisterPdfButton booking={booking} />
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      );
     },
   },
 ];

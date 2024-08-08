@@ -121,6 +121,7 @@ model BookingDetail {
   adults          Int           @default(0)
   children        Int           @default(0)
   kids            Int           @default(0)
+  quantity        Int           @default(1)
   city            String        @default("none")
   country         String        @default("none")
   phone           String        @default("none")

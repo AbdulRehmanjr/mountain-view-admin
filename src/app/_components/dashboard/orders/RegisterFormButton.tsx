@@ -6,14 +6,15 @@ import { useState } from "react";
 import { Button } from "~/components/ui/button";
 import { useToast } from "~/components/ui/use-toast";
 
-export const PdfButton = ({booking}:{booking:BookingDetailProps}) => {
+export const RegisterPdfButton = ({booking}:{booking:BookingDetailProps}) => {
+
   const [disable, setDisable] = useState<boolean>(false);
   const toast = useToast();
 
   const handleGeneratePDF = async () => {
     try {
       setDisable(() => true);
-      const response = await fetch("/api/booking-detail", {
+      const response = await fetch("/api/register", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -50,7 +51,7 @@ export const PdfButton = ({booking}:{booking:BookingDetailProps}) => {
 
   return (
     <Button type="button" className="w-full" variant={'outline'} onClick={handleGeneratePDF} disabled={disable}>
-      Downlaod pdf
+      Register form
     </Button>
   );
 };

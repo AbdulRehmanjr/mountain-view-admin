@@ -4,7 +4,7 @@ import { CalendarForm } from "~/app/_components/dashboard/booking/CalendarForm";
 import { api } from "~/trpc/react";
 import { useMemo, useState } from "react";
 import { useHotelAdmin } from "~/utils/store";
-import { getAllDatesBetween } from "~/utils";
+import { extractPricesForDates, getAllDatesBetween } from "~/utils";
 import dayjs, { type Dayjs } from "dayjs";
 import { Button } from "~/components/ui/button";
 import { ReloadIcon } from "@radix-ui/react-icons";
@@ -87,39 +87,6 @@ export const BookingForm = () => {
       if (rateFilter) setQuantity(rateFilter.quantity);
     }
   }, [calendar.subRateId, rate.data]);
-
-  const isBetween = (
-    checkDate: Dayjs,
-    startDate: Dayjs | null,
-    endDate: Dayjs | null,
-  ) =>
-    checkDate.isSame(startDate, "days") ||
-    checkDate.isSame(endDate, "days") ||
-    (checkDate.isAfter(startDate, "days") &&
-      checkDate.isBefore(endDate, "days"));
-
-  const extractPricesForDates = (
-    allDates: string[],
-    prices: FilteredPricesProps | undefined,
-    totalPeople: number,
-  ) => {
-    let totalPrice = 0;
-
-    if (prices) {
-      allDates.forEach((date) => {
-        const priceObj = prices.RoomPrice.find((price) =>
-          isBetween(dayjs(date), dayjs(price.startDate), dayjs(price.endDate)),
-        );
-        if (priceObj) {
-          totalPrice +=
-            totalPeople > 3
-              ? priceObj.price + priceObj.price * (10 / 100)
-              : priceObj.price;
-        }
-      });
-    }
-    return totalPrice * totalPeople;
-  };
 
   const calculatePriceSum = (startDate: Dayjs, endDate: Dayjs) => {
     const allDates: string[] = getAllDatesBetween(startDate, endDate);

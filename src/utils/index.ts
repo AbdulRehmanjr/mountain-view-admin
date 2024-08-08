@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unsafe-argument */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { randomBytes } from "crypto";
-import { type Dayjs } from "dayjs";
+import dayjs, { type Dayjs } from "dayjs";
 
 
 export const encodeToBase64 = (username: string, password: string): string => {
@@ -68,4 +68,28 @@ export const getAllDatesBetween = (startDate: Dayjs, endDate: Dayjs): string[] =
         start = start.add(1, 'day')
     }
     return dates
+}
+
+export const isBetween = (
+    checkDate: Dayjs,
+    startDate: Dayjs | null,
+    endDate: Dayjs | null,
+) =>
+    checkDate.isSame(startDate, "days") ||
+    checkDate.isSame(endDate, "days") ||
+    (checkDate.isAfter(startDate, "days") &&
+        checkDate.isBefore(endDate, "days"));
+        
+export const extractPricesForDates = (allDates: string[], prices: FilteredPricesProps | undefined, totalPeople: number) => {
+    let totalPrice = 0
+
+    if (prices) {
+        allDates.forEach(date => {
+            const priceObj = prices.RoomPrice.find(price => isBetween(dayjs(date), dayjs(price.startDate), dayjs(price.endDate)))
+            if (priceObj) {
+                totalPrice += totalPeople > 3 ? priceObj.price + (priceObj.price * (10 / 100)) : priceObj.price
+            }
+        })
+    }
+    return totalPrice * totalPeople
 }

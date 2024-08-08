@@ -5,7 +5,6 @@ import dayjs, { type Dayjs } from "dayjs";
 import { useHotelAdmin } from "~/utils/store";
 import { cn } from "~/lib/utils";
 import { Button } from "~/components/ui/button";
-import { isBetween } from "~/utils";
 
 export const CalendarForm = ({
   pricesData,
@@ -65,6 +64,38 @@ export const CalendarForm = ({
       });
   };
 
+  const isBetween = (
+    checkDate: Dayjs,
+    startDate: Dayjs | null,
+    endDate: Dayjs | null,
+  ) =>
+    checkDate.isSame(startDate, "days") ||
+    checkDate.isSame(endDate, "days") ||
+    (checkDate.isAfter(startDate, "days") &&
+      checkDate.isBefore(endDate, "days"));
+
+  const extractPricesForDates = (
+    allDates: string[],
+    prices: FilteredPricesProps | undefined,
+    totalPeople: number,
+  ) => {
+    let totalPrice = 0;
+
+    if (prices) {
+      allDates.forEach((date) => {
+        const priceObj = prices.RoomPrice.find((price) =>
+          isBetween(dayjs(date), dayjs(price.startDate), dayjs(price.endDate)),
+        );
+        if (priceObj) {
+          totalPrice +=
+            totalPeople > 3
+              ? priceObj.price + priceObj.price * (10 / 100)
+              : priceObj.price;
+        }
+      });
+    }
+    return totalPrice * totalPeople;
+  };
 
   const DateTemplate = ({ date }: { date: Dayjs }) => {
     if (!date) return <td className="relative border p-1 md:p-2"></td>;

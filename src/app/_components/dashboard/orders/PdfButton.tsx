@@ -13,7 +13,7 @@ export const PdfButton = ({booking}:{booking:BookingDetailProps}) => {
   const handleGeneratePDF = async () => {
     try {
       setDisable(() => true);
-      const response = await fetch("/api/booking-detail", {
+      const response = await fetch("/api/bookingdetail", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

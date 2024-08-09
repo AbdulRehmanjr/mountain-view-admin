@@ -44,14 +44,15 @@ export const BookingRouter = createTRPCRouter({
                     payPalInfoId: true,
                     roomRoomId: true,
                     bookingDetailId: true,
-                    type:true,
+                    type: true,
+                    mealType:true,
                     bookingDetails: {
                         select: {
                             bookingDetailId: true,
                             adults: true,
                             children: true,
                             kids: true,
-                            quantity:true,
+                            quantity: true,
                             city: true,
                             country: true,
                             phone: true,
@@ -72,8 +73,8 @@ export const BookingRouter = createTRPCRouter({
                             hotel: {
                                 select: {
                                     hotelName: true,
-                                    island:true,
-                                    phone:true,
+                                    island: true,
+                                    phone: true,
                                 }
                             }
                         }
@@ -108,11 +109,12 @@ export const BookingRouter = createTRPCRouter({
             adults: z.number(),
             children: z.number(),
             kids: z.number(),
-            quantity:z.number(),
+            quantity: z.number(),
             roomId: z.string(),
             startDate: z.string(),
             endDate: z.string(),
             price: z.number(),
+            mealType: z.string(),
             name: z.string(),
             surName: z.string(),
             email: z.string().email(),
@@ -132,7 +134,7 @@ export const BookingRouter = createTRPCRouter({
                         adults: input.adults,
                         children: input.children,
                         kids: input.kids,
-                        quantity:input.quantity,
+                        quantity: input.quantity,
                         fullName: input.name,
                         surName: input.surName,
                         email: input.email,
@@ -151,6 +153,7 @@ export const BookingRouter = createTRPCRouter({
                         price: +input.price,
                         roomRoomId: input.roomId,
                         type: input.type,
+                        mealType: input.mealType,
                         bookingDetailId: bookingInfo.bookingDetailId,
                         payPalInfoId: '77cdasdfd-8b57-4601-a7e1-9f026c663014'
                     }

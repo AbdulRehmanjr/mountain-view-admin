@@ -33,17 +33,21 @@ import {
   SelectTrigger,
   SelectValue,
 } from "~/components/ui/select";
+import { useToast } from "~/components/ui/use-toast";
 
 const formSchema = z.object({
   room: z.string({ required_error: "Field is required" }),
   subRateId: z.string({ required_error: "Field is required" }),
   quantity: z.number({ required_error: "Field is required" }),
+  mealType: z.string({ required_error: "Field is requried." }),
   adults: z.number({ required_error: "Field is required" }),
   children: z.optional(z.number({ required_error: "Field is required" })),
   infants: z.optional(z.number({ required_error: "Field is required" })),
   firstName: z.string({ required_error: "Field is required" }),
   lastName: z.string({ required_error: "Field is required" }),
-  email: z.string({ required_error: "Field is required" }),
+  email: z
+    .string({ required_error: "Field is required" })
+    .email({ message: "Email format not correct. " }),
   phone: z.string({ required_error: "Field is required" }),
   city: z.string({ required_error: "Field is required" }),
   country: z.string({ required_error: "Field is required" }),
@@ -52,10 +56,38 @@ const formSchema = z.object({
   address: z.string({ required_error: "Field is required" }),
 });
 
+type MealPlanType = {
+  code: number;
+  name: string;
+};
+
+const mealPlanTypes: MealPlanType[] = [
+  { code: 1, name: "All inclusive" },
+  { code: 2, name: "BreakFast" },
+  { code: 3, name: "Lunch" },
+  { code: 4, name: "Dinner" },
+  { code: 5, name: "American" },
+  { code: 6, name: "Bed & breakfast" },
+  { code: 7, name: "Buffet breakfast" },
+  { code: 8, name: "Caribbean breakfast" },
+  { code: 9, name: "Continental breakfast" },
+  { code: 10, name: "English breakfast" },
+  { code: 11, name: "European plan" },
+  { code: 12, name: "Family plan" },
+  { code: 13, name: "Full board" },
+  { code: 14, name: "Half board/modified American plan" },
+  { code: 15, name: "Room only (Default)" },
+  { code: 16, name: "Self catering" },
+  { code: 17, name: "Bermuda" },
+  { code: 18, name: "Dinner bed and breakfast plan" },
+  { code: 19, name: "Family American" },
+  { code: 20, name: "Modified" },
+  { code: 21, name: "Breakfast & lunch" },
+];
 export const BookingForm = () => {
+  const toast = useToast();
   const [roomQuantity, setQuantity] = useState<number>(0);
   const { calendar, setCalendar, resetStore } = useHotelAdmin();
-
   const pricesData = api.price.getPricesWithRateIdAndRoomId.useQuery(
     {
       roomId: calendar.roomId,
@@ -76,6 +108,17 @@ export const BookingForm = () => {
     onSuccess: () => {
       resetStore();
       form.reset();
+      toast.toast({
+        title: "Success",
+        description: "Booking added",
+      });
+    },
+    onError: () => {
+      toast.toast({
+        variant: "destructive",
+        title: "Failed!!!",
+        description: "Booking not confirmed",
+      });
     },
   });
 
@@ -115,6 +158,7 @@ export const BookingForm = () => {
       country: data.country,
       quantity: calendar.quantity,
       type: "manual",
+      mealType: data.mealType,
       startDate: dayjs(calendar.startDate).format("YYYY-MM-DD"),
       endDate: dayjs(calendar.endDate).format("YYYY-MM-DD"),
       arrivalTime: data.arrivalTime ?? "none",
@@ -246,12 +290,12 @@ export const BookingForm = () => {
                   <Select
                     value={field.value ?? ""}
                     onValueChange={async (value) => {
+                      await rate.refetch();
                       field.onChange(value);
                       setCalendar({
                         ...calendar,
                         roomId: value ?? "none",
                       });
-                      await rate.refetch();
                     }}
                   >
                     <FormControl>
@@ -293,6 +337,16 @@ export const BookingForm = () => {
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
+                      {!rate.isFetched && !rate.isFetching && (
+                        <SelectItem value="default" disabled>
+                          Select room
+                        </SelectItem>
+                      )}
+                      {rate.isFetching && (
+                        <SelectItem value="loading" disabled>
+                          Loading...
+                        </SelectItem>
+                      )}
                       {rate.data?.map((data) => (
                         <SelectItem
                           key={data.rrpId}
@@ -314,6 +368,7 @@ export const BookingForm = () => {
                 <FormItem>
                   <FormLabel>Room Quantity</FormLabel>
                   <Select
+                    value={field.value + ""}
                     onValueChange={async (value) => {
                       const data = parseInt(value);
                       field.onChange(data);
@@ -333,6 +388,33 @@ export const BookingForm = () => {
                       {Array.from({ length: roomQuantity }, (_, i) => (
                         <SelectItem key={i} value={`${i + 1}`}>
                           {i + 1}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="mealType"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Meal type</FormLabel>
+                  <Select
+                    value={field.value ?? ""}
+                    onValueChange={field.onChange}
+                  >
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select meal type" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      {mealPlanTypes.map((item, index) => (
+                        <SelectItem key={index} value={item.name}>
+                          {item.name}
                         </SelectItem>
                       ))}
                     </SelectContent>

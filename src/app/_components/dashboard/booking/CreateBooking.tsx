@@ -88,17 +88,25 @@ export const BookingForm = () => {
   const toast = useToast();
   const [roomQuantity, setQuantity] = useState<number>(0);
   const { calendar, setCalendar, resetStore } = useHotelAdmin();
+  const [shouldFetchPrices, setShouldFetchPrices] = useState<boolean>(false);
+  const [shouldFetchRate, setShouldFetchRate] = useState<boolean>(false);
   const pricesData = api.price.getPricesWithRateIdAndRoomId.useQuery(
     {
       roomId: calendar.roomId,
       rateId: calendar.subRateId,
     },
-    { enabled: false },
+    {
+      enabled: shouldFetchPrices && !!calendar.roomId && !!calendar.subRateId,
+    },
   );
+
   const rooms = api.room.getAllRoomsBySellerId.useQuery();
+
   const rate = api.rateplan.getRoomRatePlanByRoomId.useQuery(
     { roomId: calendar.roomId },
-    { enabled: false },
+    {
+      enabled: shouldFetchRate && !!calendar.roomId,
+    },
   );
 
   const form = useForm<z.infer<typeof formSchema>>({
@@ -289,8 +297,8 @@ export const BookingForm = () => {
                   <FormLabel>Select room</FormLabel>
                   <Select
                     value={field.value ?? ""}
-                    onValueChange={async (value) => {
-                      await rate.refetch();
+                    onValueChange={(value) => {
+                      setShouldFetchRate(true);
                       field.onChange(value);
                       setCalendar({
                         ...calendar,
@@ -339,7 +347,7 @@ export const BookingForm = () => {
                     <SelectContent>
                       {!rate.isFetched && !rate.isFetching && (
                         <SelectItem value="default" disabled>
-                          Select room
+                          Select a room first
                         </SelectItem>
                       )}
                       {rate.isFetching && (
@@ -369,14 +377,14 @@ export const BookingForm = () => {
                   <FormLabel>Room Quantity</FormLabel>
                   <Select
                     value={field.value + ""}
-                    onValueChange={async (value) => {
+                    onValueChange={(value) => {
+                      setShouldFetchPrices(true);
                       const data = parseInt(value);
                       field.onChange(data);
                       setCalendar({
                         ...calendar,
                         quantity: data ?? 0,
                       });
-                      await pricesData.refetch();
                     }}
                   >
                     <FormControl>

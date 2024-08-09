@@ -94,12 +94,29 @@ const columns: ColumnDef<BookingDetailProps>[] = [
   {
     accessorKey: "bookingDetails.email",
     header: "Email",
-    cell: ({ row }) => <div>{row.original.bookingDetails.email}</div>,
+    cell: ({ row }) => {
+      const email = row.original.bookingDetails.email;
+      const truncatedEmail = email.length > 12 
+        ? email.slice(0, 12) + '...' 
+        : email;
+      
+      return <div title={email}>{truncatedEmail}</div>;
+    },
   },
   {
     accessorKey: "price",
     header: "Price",
-    cell: ({ row }) => <div>${row.getValue("price")}</div>,
+    cell: ({ row }) => {
+  
+      const formatter = new Intl.NumberFormat('en-EU', {
+        style: 'currency',
+        currency: 'EUR',
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+      });
+  
+      return <div>{formatter.format(row.getValue("price"))}</div>;
+    },
   },
   {
     accessorKey: "type",
@@ -121,7 +138,14 @@ const columns: ColumnDef<BookingDetailProps>[] = [
   {
     accessorKey: "PayPalBoookingInfo.paymentId",
     header: "Payment ID",
-    cell: ({ row }) => <div>{row.original.PayPalBoookingInfo.paymentId}</div>,
+    cell: ({ row }) => {
+      const paymentId = row.original.PayPalBoookingInfo.paymentId
+      const truncatedPaymentId = paymentId.length > 12 
+        ? paymentId.slice(0, 12) + '...' 
+        : paymentId;
+      
+      return <div title={paymentId}>{truncatedPaymentId}</div>;
+    },
   },
   {
     id: "actions",

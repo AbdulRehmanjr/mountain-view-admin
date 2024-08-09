@@ -127,6 +127,9 @@ export const CalendarForm = ({
         <Button type="button" onClick={handleNextMonth}>
           Next
         </Button>
+        <Button type="button" variant={'outline'} onClick={()=> setCalendar({...calendar,startDate:null,endDate:null})}>
+              Clear
+        </Button>
       </div>
       <div className="overflow-x-auto">
         <table className="w-full rounded-md bg-white">

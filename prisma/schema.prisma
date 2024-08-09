@@ -108,6 +108,7 @@ model RoomBooking {
   isRefund           Boolean            @default(false)
   price              Int                @default(0)
   type               String             @default("none")
+  mealType           String             @default("none")
   payPalInfoId       String
   bookingDetailId    String
   roomRoomId         String

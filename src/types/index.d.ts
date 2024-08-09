@@ -138,6 +138,7 @@ type BookingProps = {
     startDate: string
     endDate: string
     price: string
+    mealType:string
     status: boolean
     isRefund: boolean
     paymentEmail: string
@@ -175,6 +176,7 @@ type BookingDetailProps = {
     payPalInfoId: string
     roomRoomId: string
     bookingDetailId: string
+    mealType:string
     bookingDetails: {
         bookingDetailId: string
         adults: number

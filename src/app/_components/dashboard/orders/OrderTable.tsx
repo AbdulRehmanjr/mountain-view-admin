@@ -107,6 +107,11 @@ const columns: ColumnDef<BookingDetailProps>[] = [
     cell: ({ row }) => <div>{row.getValue("type")}</div>,
   },
   {
+    accessorKey: "mealType",
+    header: "Meal type",
+    cell: ({ row }) => <div>{row.getValue("mealType")}</div>,
+  },
+  {
     accessorKey: "isRefund",
     header: "Refund Status",
     cell: ({ row }) => (
